@@ -11,7 +11,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.listen(PORT, function () {
     console.log("App start on port", PORT);
-    console.log("Hello World!")
+    console.log(process.env.PORT)
+    console.log(process.env.LW_API_CLIENT_ID)
+    console.log(process.env.LW_API_BOT_SECRET)
+    console.log(process.env.LW_API_CLIENT_SECRET)
+    console.log(process.env.LW_API_SERVICE_ACCOUNT)
+    console.log(process.env.LW_API_BOT_ID)
+    console.log(process.env.LW_API_PRIVATEKEY)
 })
 
 let global_data = {}
@@ -33,7 +39,7 @@ let verifyBody = (req, res, next) => {
 }
 
 app.post('/callback', verifyBody, async (req, res, next) => {
-    console.log("get request")
+    console.debug("Get message", req.body);
     const clientId = process.env.LW_API_CLIENT_ID
     const clientSecret = process.env.LW_API_CLIENT_SECRET
     const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
