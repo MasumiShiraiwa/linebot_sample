@@ -29,14 +29,24 @@ let verifyBody = (req, res, next) => {
     const body = JSON.stringify(req.body);
     const signature = req.get("x-works-signature");
 
-    const rst = lineworks.validateRequest(body, signature, botSecret)
+    console.debug("Received Headers:", req.headers); // 追加
+    console.debug("Signature:", signature); // 追加
+    console.debug("Bot Secret:", botSecret); // 追加
 
-    if (rst == true) {
-        next()
-    } else {
-        console.debug("Verify NG")
+    if (!signature || !botSecret) {
+        console.error("Missing required headers or bot secret.");
+        return res.status(400).send({ error: "Missing required headers or bot secret." });
     }
-}
+
+    const rst = lineworks.validateRequest(body, signature, botSecret);
+    if (rst == true) {
+        next();
+    } else {
+        console.debug("Verify NG");
+        res.status(400).send({ error: "Invalid signature" });
+    }
+};
+
 
 app.post('/callback', verifyBody, async (req, res, next) => {
     console.debug("Get message", req.body);
