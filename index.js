@@ -3,13 +3,14 @@ const { setTimeout } = require('timers/promises');
 
 const lineworks = require("./lineworks");
 
+const PORT = process.env.PORT || 3000;
 let app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.listen(8000, function () {
-    console.log("App start on port 8000");
+app.listen(PORT, function () {
+    console.log("App start on port", PORT);
     console.log("Hello World!")
 })
 
