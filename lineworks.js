@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
 const axios = require("axios");
-var crypto = require("crypto");
+const jwt = require('jsonwebtoken');
+var crypto = require("crypto"); // 暗号処理に関するモジュール。Nodeインストール時に付属されている
 
 
 let safeCompare = (a, b) => {

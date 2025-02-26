@@ -10,6 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.listen(8000, function () {
     console.log("App start on port 8000");
+    console.log("Hello World!")
 })
 
 let global_data = {}
