@@ -32,13 +32,14 @@ let verifyBody = (req, res, next) => {
 }
 
 app.post('/callback', verifyBody, async (req, res, next) => {
+    console.log("get request")
     const clientId = process.env.LW_API_CLIENT_ID
     const clientSecret = process.env.LW_API_CLIENT_SECRET
     const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
     const privatekey = process.env.LW_API_PRIVATEKEY
     const botId = process.env.LW_API_BOT_ID
 
-    const scope = "bot"
+    const scope = "bot,bot.read,user.read"
 
     const body = req.body;
     console.debug("Get message", body)
