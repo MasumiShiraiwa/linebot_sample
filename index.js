@@ -70,8 +70,11 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 
     const senderId = body.source.userId
-    const userEmail = await getUserInfo.getUserInformation(userId, accessToken)
-    console.log(userEmail)
+    const rst = await getUserInfo.getUserInformation(senderId, accessToken)
+    console.log(rst);
+    const userEmail = rst.data.email;
+
+
     const content = {
         content: body.content
     }
@@ -82,12 +85,17 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         try {
             // Send message
             console.debug("Send message", content)
+
             if(userEmail == "14262@donnguri"){
                 console.log("sender is masumi!!")
                 const rst = await lineworks.sendMessageToUser(content, botId, "14421@donnguri", global_data["access_token"])    
+                console.debug("Success sending message to designated user", rst.status)
+                res.send("success")
+                break
             }else{
                 console.log("sender is not masumi!!")
             }
+
             const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"])
             console.debug("Success sending message", rst.status)
             res.send("success")
