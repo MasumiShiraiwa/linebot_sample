@@ -69,7 +69,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         global_data["access_token"] = accessToken
     }
 
-    const userId = body.source.userId
+    const senderId = body.source.userId
     const content = {
         content: body.content
     }
@@ -83,7 +83,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             if(senderId == "14262@donnguri"){
                 const rst = await lineworks.sendMessageToUser(content, botId, "14421@donnguri", global_data["access_token"])    
             }
-            const rst = await lineworks.sendMessageToUser(content, botId, userId, global_data["access_token"])
+            const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"])
             console.debug("Success sending message", rst.status)
             res.send("success")
             break
