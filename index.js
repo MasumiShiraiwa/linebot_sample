@@ -70,7 +70,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 
     const senderId = body.source.userId
-    const rst = await getUserInfo.getUserInformation(senderId, accessToken)
+    const rst = await getUserInfo.getUserInformation(senderId, global_data["access_token"] )
     console.log(rst);
     const userEmail = rst.data.email;
 
