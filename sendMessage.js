@@ -16,7 +16,7 @@ const axios = require("axios");
  * @param {string} accessToken - Access Token
  * @return {Object} response
  */
-export let sendMessageToUser = async (content, botId, userId, accessToken) => {
+let sendMessageToUser = async (content, botId, userId, accessToken) => {
     const headers = {
         Authorization: `Bearer ${accessToken}`
     };
@@ -27,3 +27,4 @@ export let sendMessageToUser = async (content, botId, userId, accessToken) => {
     return res;
 };
 
+module.exports = {sendMessageToUser}
