@@ -2,6 +2,7 @@ const express = require('express');
 const { setTimeout } = require('timers/promises');
 
 const lineworks = require("./lineworks");
+const getUserInfo = require("./getUserInfo");
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -69,7 +70,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 
     const senderId = body.source.userId
-    console.log(typeof(senderId), senderId)
+    const userEmail = await getUserInfo.getUserInformation(userId, accessToken).email;
     const content = {
         content: body.content
     }
@@ -80,7 +81,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         try {
             // Send message
             console.debug("Send message", content)
-            if(senderId == "14262@donnguri"){
+            if(userEmail == "14262@donnguri"){
                 console.log("sender is masumi!!")
                 const rst = await lineworks.sendMessageToUser(content, botId, "14421@donnguri", global_data["access_token"])    
             }else{
