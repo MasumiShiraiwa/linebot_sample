@@ -12,13 +12,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.listen(PORT, function () {
     console.log("App start on port", PORT);
-    console.log(process.env.PORT)
-    console.log(process.env.LW_API_CLIENT_ID)
-    console.log(process.env.LW_API_BOT_SECRET)
-    console.log(process.env.LW_API_CLIENT_SECRET)
-    console.log(process.env.LW_API_SERVICE_ACCOUNT)
-    console.log(process.env.LW_API_BOT_ID)
-    console.log(process.env.LW_API_PRIVATEKEY)
+    // console.log(process.env.PORT)
+    // console.log(process.env.LW_API_CLIENT_ID)
+    // console.log(process.env.LW_API_BOT_SECRET)
+    // console.log(process.env.LW_API_CLIENT_SECRET)
+    // console.log(process.env.LW_API_SERVICE_ACCOUNT)
+    // console.log(process.env.LW_API_BOT_ID)
+    // console.log(process.env.LW_API_PRIVATEKEY)
 })
 
 let global_data = {}
@@ -70,7 +70,8 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 
     const senderId = body.source.userId
-    const userEmail = await getUserInfo.getUserInformation(userId, accessToken).email;
+    const userEmail = await getUserInfo.getUserInformation(userId, accessToken)
+    console.log(userEmail)
     const content = {
         content: body.content
     }
