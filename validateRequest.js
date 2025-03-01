@@ -24,9 +24,9 @@ let safeCompare = (a, b) => {
  * @return {boolean} is valid
  */
 let validateRequest = (body, signature, botSecret) => {
+    // HASH(body, BOT_SECRET)とSignatureを比較する
     return safeCompare(
         crypto.createHmac("SHA256", botSecret).update(body).digest(),
         Buffer.from(signature, "base64"),
     );
 };
-

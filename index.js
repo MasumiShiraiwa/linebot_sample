@@ -40,6 +40,7 @@ let verifyBody = (req, res, next) => {
 
     const rst = lineworks.validateRequest(body, signature, botSecret);
     if (rst == true) {
+        console.debug("Verify OK")
         next();
     } else {
         console.debug("Verify NG");
@@ -57,9 +58,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const botId = process.env.LW_API_BOT_ID
 
     const scope = "bot,bot.read,user.read"
-
+    
     const body = req.body;
-    console.debug("Get message", body)
+    console.debug("Get message body", body)
 
     if (!global_data.hasOwnProperty("access_token")) {
         // Get access token
@@ -79,6 +80,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         try {
             // Send message
             console.debug("Send message", content)
+            if(senderId == "14262@donnguri"){
+                const rst = await lineworks.sendMessageToUser(content, botId, "14421@donnguri", global_data["access_token"])    
+            }
             const rst = await lineworks.sendMessageToUser(content, botId, userId, global_data["access_token"])
             console.debug("Success sending message", rst.status)
             res.send("success")
