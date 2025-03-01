@@ -37,7 +37,7 @@ let getJWT = (clientId, serviceAccount, privatekey) => {
  * @param {string} scope - OAuth Scope
  * @return {string} Access Token
  */
-let getAccessToken = async (clientId, clientSecret, serviceAccount, privatekey, scope) => {
+export let getAccessToken = async (clientId, clientSecret, serviceAccount, privatekey, scope) => {
     const jwt = getJWT(clientId, serviceAccount, privatekey);
 
     const params = new URLSearchParams({

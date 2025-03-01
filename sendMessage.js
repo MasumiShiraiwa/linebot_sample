@@ -16,7 +16,7 @@ const axios = require("axios");
  * @param {string} accessToken - Access Token
  * @return {Object} response
  */
-let sendMessageToUser = async (content, botId, userId, accessToken) => {
+export let sendMessageToUser = async (content, botId, userId, accessToken) => {
     const headers = {
         Authorization: `Bearer ${accessToken}`
     };

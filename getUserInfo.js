@@ -10,7 +10,7 @@ const axios = require("axios");
  * @return {Object} response
  */
 
-let getUserInformation = async (userId, accessToken) => {
+export let getUserInformation = async (userId, accessToken) => {
     const headers = {
         Authorization: `Bearer ${accessToken}`
     };

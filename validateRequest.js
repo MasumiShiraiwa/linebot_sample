@@ -23,7 +23,7 @@ let safeCompare = (a, b) => {
  * @param  {string} botSecret - Bot Secret
  * @return {boolean} is valid
  */
-let validateRequest = (body, signature, botSecret) => {
+export let validateRequest = (body, signature, botSecret) => {
     // HASH(body, BOT_SECRET)とSignatureを比較する
     return safeCompare(
         crypto.createHmac("SHA256", botSecret).update(body).digest(),
