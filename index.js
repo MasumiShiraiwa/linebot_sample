@@ -3,6 +3,7 @@ const { setTimeout } = require('timers/promises');
 
 const lineworks = require("./lineworks");
 const getUserInfo = require("./getUserInfo");
+const handleDrive = require("./handleDrive");
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -21,9 +22,10 @@ app.listen(PORT, function () {
     // console.log(process.env.LW_API_PRIVATEKEY)
 })
 
+// Global variable
 let global_data = {}
 const RETRY_COUNT_MAX = 5
-
+const ownerEmail = "14262@donnguri"
 
 let verifyBody = (req, res, next) => {
     const botSecret = process.env.LW_API_BOT_SECRET;
@@ -57,7 +59,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const privatekey = process.env.LW_API_PRIVATEKEY
     const botId = process.env.LW_API_BOT_ID
 
-    const scope = "bot,bot.read,user.read"
+    const scope = "bot,bot.read,user.read,bot.message"
     
     const body = req.body;
     console.debug("Get message body", body)
@@ -70,32 +72,50 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 
     const senderId = body.source.userId
-    console.log("getUserInfo", getUserInfo)
     const rst = await getUserInfo.getUserInformation(senderId, global_data["access_token"] )
-    console.log(rst);
     const userEmail = rst.data.email;
-
-
-    const content = {
+    
+    let content = {
         content: body.content
     }
 
+    /**
+     * 受信したメッセージの"送信者"と"メッセージタイプ"をもとに、処理を分ける
+     */
+    // 管理者からファイルを送られた場合
+    if (content.content.type == "file" && userEmail == ownerEmail){
+        //Excel Fileの取得と検証？ファイル名から月を判別する？
+        const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
+        console.debug(res);
+        if(true){
+            content = {
+                content: {
+                    type: "text",
+                    text: "月のシフト表を受け付けました。"
+                }
+            }
+        }
+    }else if(content.content.type == "text" && userEmail == ownerEmail){
+        content = {
+            content: {
+                type: "text",
+                text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
+            }
+        }
+    }else{
+        content = {
+            content: {
+                type: "text",
+                text: "メッセージを受け付けておりません。不明点があれば、白岩まで。"
+            }
+        }
+    }
 
     for (let i = 0; i < RETRY_COUNT_MAX; i++) {
         console.debug("Try ", i + 1)
         try {
             // Send message
             console.debug("Send message", content)
-
-            if(userEmail == "14262@donnguri"){
-                console.log("sender is masumi!!")
-                const rst = await lineworks.sendMessageToUser(content, botId, "14421@donnguri", global_data["access_token"])    
-                console.debug("Success sending message to designated user", rst.status)
-                res.send("success")
-                break
-            }else{
-                console.log("sender is not masumi!!")
-            }
 
             const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"])
             console.debug("Success sending message", rst.status)
@@ -134,3 +154,11 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 });
 
+
+// GASからのリクエストを受ける
+app.post("/remind", async (req, res, next) => {
+    const body = req.body;
+    console.debug("Get message body", body)
+
+
+});

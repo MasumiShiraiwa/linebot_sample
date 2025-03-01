@@ -55,4 +55,4 @@ let getAccessToken = async (clientId, clientSecret, serviceAccount, privatekey, 
     return accessToken;
 };
 
-module.exports = {getAccessToken}
+module.exports = {getAccessToken};

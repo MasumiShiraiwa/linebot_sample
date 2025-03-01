@@ -31,4 +31,4 @@ let validateRequest = (body, signature, botSecret) => {
     );
 };
 
-module.exports = {validateRequest}
+module.exports = {validateRequest};

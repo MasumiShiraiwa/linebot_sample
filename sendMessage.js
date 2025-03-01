@@ -27,4 +27,4 @@ let sendMessageToUser = async (content, botId, userId, accessToken) => {
     return res;
 };
 
-module.exports = {sendMessageToUser}
+module.exports = {sendMessageToUser};
