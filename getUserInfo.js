@@ -18,6 +18,6 @@ let getUserInformation = async (userId, accessToken) => {
     const res = await axios.get(`https://www.worksapis.com/v1.0/users/${userId}`, {headers});
 
     return res;
-}
+};
 
 module.exports = { getUserInformation };
