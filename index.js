@@ -50,7 +50,6 @@ let verifyBody = (req, res, next) => {
 
 
 app.post('/callback', verifyBody, async (req, res, next) => {
-    console.debug("Get message", req.body);
     const clientId = process.env.LW_API_CLIENT_ID
     const clientSecret = process.env.LW_API_CLIENT_SECRET
     const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
@@ -70,6 +69,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }
 
     const senderId = body.source.userId
+    console.log(typeof(senderId), senderId)
     const content = {
         content: body.content
     }
@@ -81,7 +81,10 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             // Send message
             console.debug("Send message", content)
             if(senderId == "14262@donnguri"){
+                console.log("sender is masumi!!")
                 const rst = await lineworks.sendMessageToUser(content, botId, "14421@donnguri", global_data["access_token"])    
+            }else{
+                console.log("sender is not masumi!!")
             }
             const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"])
             console.debug("Success sending message", rst.status)
