@@ -1,36 +1,38 @@
 const axios = require("axios");
 
 /**
- * Download the file sended by a user.
+ * Download the file from a redirected URL.
  * @async
- * @param {Object} content - Message Content
- *  "content": {
-    "type": "text",
-    "text": "[message]"
-  }
- * 
- * 
  * @param {string} botId - Bot ID
- * @param {string} fileId - field ID
+ * @param {string} fileId - File ID
  * @param {string} accessToken - Access Token
- * @return {Object} fileResponse 
+ * @return {Object} fileResponse - File stream response
  */
 
-  let uploadToDrive = async (botId, fileId, accessToken) => {
-    const headers = {
-        Authorization: `Bearer ${accessToken}`,
-    };
+let uploadToDrive = async (botId, fileId, accessToken) => {
+  try {
+      const headers = {
+          Authorization: `Bearer ${accessToken}`,
+      };
 
-    //res =  (Found - Location ヘッダーのダウンロード URL にリダイレクト)
-    const res = await axios.post(`https://www.worksapis.com/v1.0/bots/${botId}/attachments/${fileId}`, { headers },
-    );
+      // API からリダイレクトURLを取得
+      const res = await axios.post(
+          `https://www.worksapis.com/v1.0/bots/${botId}/attachments/${fileId}`,
+          null, // POSTリクエストでボディが不要な場合は `null` を渡す
+          { headers }
+      );
 
-    const downloadUrl = res.headers.location;
-    if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
+      // リダイレクトURLを取得
+      const downloadUrl = res.headers.location;
+      if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
 
-    const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
+      // リダイレクトされたURLからファイルを取得
+      const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
 
-    return fileResponse; // とりあえず、受け取るだけ
-  };
-
+      return fileResponse; // ファイルストリームを返す
+  } catch (error) {
+      console.error("Error downloading file:", error.message);
+      throw error;
+  }
+};
   module.exports = {uploadToDrive};
