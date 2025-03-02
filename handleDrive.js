@@ -22,9 +22,12 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
           { headers }
       );
 
+      console.debug("get redirect URL: ", res);
+
       // リダイレクトURLを取得
       const downloadUrl = res.headers.location;
       if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
+      console.log("doenload URL: ", downloadUrl);
 
       // リダイレクトされたURLからファイルを取得
       const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
