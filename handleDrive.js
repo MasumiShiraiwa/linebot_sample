@@ -16,13 +16,12 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
       };
 
       // API からリダイレクトURLを取得
-      const res = await axios.post(
+      const res = await axios.get(
           `https://www.worksapis.com/v1.0/bots/${botId}/attachments/${fileId}`,
-          null, // POSTリクエストでボディが不要な場合は `null` を渡す
           { headers }
       );
 
-      console.debug("get redirect URL: ", res);
+      console.debug("responce for getting redirect URL: ", res);
 
       // リダイレクトURLを取得
       const downloadUrl = res.headers.location;
