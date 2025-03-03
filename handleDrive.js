@@ -21,26 +21,35 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
           {
               headers: headers,
               maxRedirects: 0, // これを設定しないとリダイレクトが自動で処理されてしまう
-              validateStatus: status => status >= 200 || status < 300,
-          }
+              validateStatus: status => status === 302 || (status >= 200 && status < 300)
+            }
       );
 
       console.debug("responce for getting redirect URL: ", res.headers);
-      // リダイレクトURLを取得
-      const downloadUrl = res.headers.location;
-      if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
-      console.log("Download URL: ", downloadUrl);
 
-      if (res.status == 302){
-        console.log("this can find file")
+      // ステータスが 302 の場合のみリダイレクト URL を取得
+    if (res.status === 302) {
+        const downloadUrl = res.headers.location;
+        if (!downloadUrl) {
+          throw new Error("リダイレクト URL が見つかりません");
+        }
+        console.log("Download URL:", downloadUrl);
+  
+        // リダイレクトURLからファイルを取得
+        const fileResponse = await axios.get(downloadUrl, {
+          headers: headers,
+          responseType: "stream"
+        });
+  
+        // ステータスコードチェック
+        if (fileResponse.status < 200 || fileResponse.status >= 300) {
+          throw new Error(`ファイルダウンロードに失敗しました: ${fileResponse.status}`);
+        }
+  
+        return fileResponse;
+      } else {
+        throw new Error(`予期しないステータスコード: ${res.status}`);
       }
-
-      // リダイレクトURLからファイルを取得
-      const fileResponse = await axios.get(downloadUrl, 
-        { 
-            headers: headers,
-            responseType: "stream" });
-      return fileResponse;
 
   } catch (error) {
     console.error("Error downloading file:", error.message);

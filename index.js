@@ -85,11 +85,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
      */
     // 管理者からファイルを送られた場合
     if (content.content.type == "file" && userEmail == ownerEmail){
-        const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"]);
-
         //Excel Fileの取得と検証？ファイル名から月を判別する？
         const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
-        console.log("this is the response by RedirectURL", res);
+        console.log("this is the response by uploadToDrive.", res);
         
         if(true){
             console.log("this is in ")
