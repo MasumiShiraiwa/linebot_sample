@@ -36,8 +36,12 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
 
     //   return fileResponse; // ファイルストリームを返す
   } catch (error) {
-      console.error("Error downloading file:", error.message);
-      throw error;
-  }
+    console.error("Error downloading file:", error.message);
+    if (error.response) {
+        console.error("HTTP Status:", error.response.status);
+        console.error("Response Data:", error.response.data);
+    }
+    throw error;
+}
 };
   module.exports = {uploadToDrive};
