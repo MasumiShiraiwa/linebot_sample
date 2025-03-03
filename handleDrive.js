@@ -24,9 +24,13 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
           }
       );
 
-      console.debug("responce for getting redirect URL: ", res);
-
+      console.debug("responce for getting redirect URL: ", res.headers);
       // リダイレクトURLを取得
+      const downloadUrl = res.headers.location;
+      if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
+      console.log("Download URL: ", downloadUrl);
+
+    // リダイレクトURLを取得
     //   const downloadUrl = res.headers.location;
     //   if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
     //   console.log("doenload URL: ", downloadUrl);
