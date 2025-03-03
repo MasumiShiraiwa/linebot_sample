@@ -69,6 +69,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         console.debug("Get access token");
         const accessToken = await lineworks.getAccessToken(clientId, clientSecret, serviceAccount, privatekey, scope);
         global_data["access_token"] = accessToken
+        console.log("access token: ", accessToken);
     }
 
     const senderId = body.source.userId
@@ -84,9 +85,8 @@ app.post('/callback', verifyBody, async (req, res, next) => {
      */
     // 管理者からファイルを送られた場合
     if (content.content.type == "file" && userEmail == ownerEmail){
-        //Excel Fileの取得と検証？ファイル名から月を判別する？
-        const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
-        console.log("this is the response by RedirectURL", res);
+        const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"]);
+
         if(true){
             content = {
                 content: {
@@ -95,6 +95,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 }
             }
         }
+        //Excel Fileの取得と検証？ファイル名から月を判別する？
+        const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
+        console.log("this is the response by RedirectURL", res);
     }else if(content.content.type == "text" && userEmail == ownerEmail){
         content = {
             content: {

@@ -24,14 +24,14 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
       console.debug("responce for getting redirect URL: ", res);
 
       // リダイレクトURLを取得
-      const downloadUrl = res.headers.location;
-      if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
-      console.log("doenload URL: ", downloadUrl);
+    //   const downloadUrl = res.headers.location;
+    //   if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
+    //   console.log("doenload URL: ", downloadUrl);
 
-      // リダイレクトされたURLからファイルを取得
-      const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
+    //   // リダイレクトされたURLからファイルを取得
+    //   const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
 
-      return fileResponse; // ファイルストリームを返す
+    //   return fileResponse; // ファイルストリームを返す
   } catch (error) {
       console.error("Error downloading file:", error.message);
       throw error;
