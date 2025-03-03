@@ -45,6 +45,23 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         if (fileResponse.status < 200 || fileResponse.status >= 300) {
           throw new Error(`ファイルダウンロードに失敗しました: ${fileResponse.status}`);
         }
+        
+        // ストリームをバッファとして読み込む
+        const buffers = [];
+        fileResponse.data.on('data', chunk => {
+            buffers.push(chunk);
+        });
+
+        // ストリームの読み込み完了後、バッファを結合して返す
+        const promise = new Promise((resolve, reject) => {
+            fileResponse.data.on('end', () => {
+            const fileBuffer = Buffer.concat(buffers);
+            resolve(fileBuffer);
+            });
+            fileResponse.data.on('error', reject);
+        });
+
+        return await promise; // ファイルの内容をバッファとして返す
   
         return fileResponse;
       } else {
