@@ -20,7 +20,8 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
           `https://www.worksapis.com/v1.0/bots/${botId}/attachments/${fileId}`,
           {
               headers: headers,
-              maxRedirects: 0 // これを設定しないとリダイレクトが自動で処理されてしまう
+              maxRedirects: 0, // これを設定しないとリダイレクトが自動で処理されてしまう
+              validateStatus: status => status >= 200 || status < 300,
           }
       );
 
@@ -30,15 +31,14 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
       if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
       console.log("Download URL: ", downloadUrl);
 
-    // リダイレクトURLを取得
-    //   const downloadUrl = res.headers.location;
-    //   if (!downloadUrl) throw new Error("ダウンロード URL が見つかりません");
-    //   console.log("doenload URL: ", downloadUrl);
+      if (res.status == 302){
+        console.log("this can find file")
+      }
 
-    //   // リダイレクトされたURLからファイルを取得
-    //   const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
+      // リダイレクトURLからファイルを取得
+      const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
+      return fileResponse;
 
-    //   return fileResponse; // ファイルストリームを返す
   } catch (error) {
     console.error("Error downloading file:", error.message);
     if (error.response) {
