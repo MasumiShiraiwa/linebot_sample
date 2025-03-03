@@ -12,13 +12,16 @@ const axios = require("axios");
 let uploadToDrive = async (botId, fileId, accessToken) => {
   try {
       const headers = {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`
       };
 
       // API からリダイレクトURLを取得
       const res = await axios.get(
           `https://www.worksapis.com/v1.0/bots/${botId}/attachments/${fileId}`,
-          { headers }
+          {
+              headers: headers,
+              maxRedirects: 0 // これを設定しないとリダイレクトが自動で処理されてしまう
+          }
       );
 
       console.debug("responce for getting redirect URL: ", res);
