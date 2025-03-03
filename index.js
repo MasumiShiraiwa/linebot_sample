@@ -87,7 +87,12 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     if (content.content.type == "file" && userEmail == ownerEmail){
         const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"]);
 
+        //Excel Fileの取得と検証？ファイル名から月を判別する？
+        const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
+        console.log("this is the response by RedirectURL", res);
+        
         if(true){
+            console.log("this is in ")
             content = {
                 content: {
                     type: "text",
@@ -95,9 +100,6 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 }
             }
         }
-        //Excel Fileの取得と検証？ファイル名から月を判別する？
-        const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
-        console.log("this is the response by RedirectURL", res);
     }else if(content.content.type == "text" && userEmail == ownerEmail){
         content = {
             content: {
