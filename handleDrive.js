@@ -36,7 +36,10 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
       }
 
       // リダイレクトURLからファイルを取得
-      const fileResponse = await axios.get(downloadUrl, { responseType: "stream" });
+      const fileResponse = await axios.get(downloadUrl, 
+        { 
+            headers: headers,
+            responseType: "stream" });
       return fileResponse;
 
   } catch (error) {
