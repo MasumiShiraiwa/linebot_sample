@@ -40,6 +40,8 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
           headers: headers,
           responseType: "stream"
         });
+
+        console.log("fileResponse: ", fileResponse);
   
         // ステータスコードチェック
         if (fileResponse.status < 200 || fileResponse.status >= 300) {
@@ -75,6 +77,6 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         console.error("Response Data:", error.response.data);
     }
     throw error;
-}
+  }
 };
   module.exports = {uploadToDrive};
