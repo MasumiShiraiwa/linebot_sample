@@ -1,4 +1,5 @@
 const axios = require("axios");
+const XLSX = require("xlsx");
 
 /**
  * Download the file from a redirected URL.
@@ -35,16 +36,13 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         }
         console.log("Download URL:", downloadUrl);
   
-        // リダイレクトURLからファイルを取得
+        // リダイレクトURLからファイルをストリームで取得
         const fileResponse = await axios.get(downloadUrl, {
           headers: headers,
           responseType: "stream"
         });
 
-        console.log("fileResponse: ", fileResponse);
         console.log("fileResponse.data: ", fileResponse.data);
-        // ファイルレスポンスの中身メモ
-        // 
   
         // ステータスコードチェック
         if (fileResponse.status < 200 || fileResponse.status >= 300) {
@@ -65,6 +63,12 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
             });
             fileResponse.data.on('error', reject);
         });
+
+        // ファイルをXLSXとして読み込む
+        const workbook = XLSX.read(fileBuffer, {type: "buffer"});
+        const sheetName = workbook.SheetNames[0];
+        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
+        console.log("sheetData: ", sheetData);
 
         return await promise; // ファイルの内容をバッファとして返す
   

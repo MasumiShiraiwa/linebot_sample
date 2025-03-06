@@ -87,10 +87,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     if (content.content.type == "file" && userEmail == ownerEmail){
         //Excel Fileの取得と検証？ファイル名から月を判別する？
         const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
-        console.log("this is the file contents.", res);
+        // console.log("this is the file contents.", res);
         
         if(true){
-            console.log("this is in ")
             content = {
                 content: {
                     type: "text",
