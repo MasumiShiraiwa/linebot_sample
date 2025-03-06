@@ -1,5 +1,6 @@
 const axios = require("axios");
 const XLSX = require("xlsx");
+const fileConverter = require("./fileConverter");
 
 /**
  * Download the file from a redirected URL.
@@ -49,24 +50,20 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         
         // ストリームをバッファとして読み込む
         const buffers = [];
-        fileResponse.data.on('data', chunk => {
-            buffers.push(chunk);
+        await new Promise((resolve, reject) => {
+            fileResponse.data.on("data", (chunk) => buffers.push(chunk)); // データをバッファに追加
+            fileResponse.data.on("end", resolve); // 受信完了
+            fileResponse.data.on("error", reject); // エラー処理
         });
 
-        // ストリームの読み込み完了後、バッファを結合して返す
-        const promise = new Promise((resolve, reject) => {
-            fileResponse.data.on('end', () => {
-            const fileBuffer = Buffer.concat(buffers);
-            resolve(fileBuffer);
-            });
-            fileResponse.data.on('error', reject);
-        });
+        // 🔹 バッファを1つのファイルデータに統合
+        const fileBuffer = Buffer.concat(buffers);
 
         // ファイルをXLSXとして読み込む
         const workbook = XLSX.read(fileBuffer, {type: "buffer"});
         const sheetName = workbook.SheetNames[0];
         const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
-        console.log("sheetData: ", sheetData);
+        console.log("sheetData: ", sheetData, "type: ", typeof(sheetData));
         console.log("sheetData[0]: ", sheetData[0]);
 
         return await sheetData; // ファイルの内容を配列として返す
