@@ -34,7 +34,6 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         if (!downloadUrl) {
           throw new Error("リダイレクト URL が見つかりません");
         }
-        console.log("Download URL:", downloadUrl);
   
         // リダイレクトURLからファイルをストリームで取得
         const fileResponse = await axios.get(downloadUrl, {
@@ -42,7 +41,6 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
           responseType: "stream"
         });
 
-        console.log("fileResponse.data: ", fileResponse.data);
   
         // ステータスコードチェック
         if (fileResponse.status < 200 || fileResponse.status >= 300) {
@@ -69,6 +67,7 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         const sheetName = workbook.SheetNames[0];
         const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
         console.log("sheetData: ", sheetData);
+        console.log("sheetData[0]: ", sheetData[0]);
 
         return await sheetData; // ファイルの内容を配列として返す
   
