@@ -70,9 +70,8 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
         console.log("sheetData: ", sheetData);
 
-        return await promise; // ファイルの内容をバッファとして返す
+        return await sheetData; // ファイルの内容を配列として返す
   
-        return fileResponse;
       } else {
         throw new Error(`予期しないステータスコード: ${res.status}`);
       }

@@ -93,7 +93,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             content = {
                 content: {
                     type: "text",
-                    text: "月のシフト表を受け付けました。"
+                    text: JSON.stringify(res)
                 }
             }
         }
