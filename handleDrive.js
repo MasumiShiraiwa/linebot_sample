@@ -42,6 +42,9 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         });
 
         console.log("fileResponse: ", fileResponse);
+        console.log("fileResponse.data: ", fileResponse.data);
+        // ファイルレスポンスの中身メモ
+        // 
   
         // ステータスコードチェック
         if (fileResponse.status < 200 || fileResponse.status >= 300) {
