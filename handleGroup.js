@@ -28,9 +28,30 @@ let getGroupList = async (accessToken) => {
     }
 }
 
-let getfileList = async (accessToken, groupId) => {}
+let getNoteList = async (accessToken, groupId) => {
+    const params = {}
+    try{
+        const res = await axios.get(`https://www.worksapis.com/v1.0/groups/${groupId}/note/posts`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            params: params
+        })
+
+        console.log("res.data: ",res.data);
+        console.log("noteList: ",res.data.posts);
+        return res.data.posts;
+    }catch(e){
+        console.error("Error getting note list:", e.message);
+        if(e.response){
+            console.error("HTTP Status:", e.response.status);
+            console.error("Response Data:", e.response.data);
+        }
+    }
+}
 
 
 module.exports = {
-    getGroupList
+    getGroupList,
+    getNoteList
 }
