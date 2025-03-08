@@ -98,12 +98,14 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(content.content.type == "text" && userEmail == ownerEmail){
-        const rst = await handleGroup.getGroupList(global_data["access_token"]);
-        // const noteList = await handleGroup.getNoteList(global_data["access_token"], "d9b7aba7-8af2-2bf4-5ff4-4caaa4e33ea4");
+        // const rst = await handleGroup.getGroupList(global_data["access_token"]);
+        const notePostList = await handleGroup.getNotePostList("68d2b697-7c8d-4799-32d5-042944f3671", global_data["access_token"]);
+        const notePost = await handleGroup.getNotePost("68d2b697-7c8d-4799-32d5-042944f3671", notePostList[0].id, global_data["access_token"]);
         content = {
             content: {
                 type: "text",
-                text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
+                text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
+                // text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
         }
     }else{

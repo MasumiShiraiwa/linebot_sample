@@ -5,7 +5,6 @@ let getGroupList = async (accessToken) => {
     const params = {
         domainId: process.env.DOMAIN_ID
     }
-    console.log("in getGroupList, domainId: ",process.env.DOMAIN_ID);
 
     try{
         console.log("send request to get group list");
@@ -28,8 +27,9 @@ let getGroupList = async (accessToken) => {
     }
 }
 
-let getNoteList = async (accessToken, groupId) => {
+let getNotePostList = async (groupId, accessToken) => {
     const params = {}
+    console.log("send request to get note list");
     try{
         const res = await axios.get(`https://www.worksapis.com/v1.0/groups/${groupId}/note/posts`, {
             headers: {
@@ -50,8 +50,31 @@ let getNoteList = async (accessToken, groupId) => {
     }
 }
 
+let getNotePost = async (groupId, postId, accessToken) => {
+    const params = {
+        groupId: groupId,
+        postId: postId
+    }
+    console.log("send request to get the note post");
+    try{
+        const res = await axios.get(`https://www.worksapis.com/v1.0/groups/${groupId}/note/posts/${postId}`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            params: params
+        })
+        return res.data;
+    }catch(e){
+        console.error("Error getting note post:", e.message);
+        if(e.response){
+            console.error("HTTP Status:", e.response.status);
+            console.error("Response Data:", e.response.data);
+        }
+    }
+}
 
 module.exports = {
     getGroupList,
-    getNoteList
+    getNotePostList,
+    getNotePost
 }
