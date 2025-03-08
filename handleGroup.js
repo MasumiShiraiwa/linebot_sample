@@ -21,8 +21,14 @@ let getGroupList = async (accessToken) => {
 
     }catch(e){
         console.error("Error getting group list:", e.message);
+        if(e.response){
+            console.error("HTTP Status:", e.response.status);
+            console.error("Response Data:", e.response.data);
+        }
     }
 }
+
+let getfileList = async (accessToken, groupId) => {}
 
 
 module.exports = {
