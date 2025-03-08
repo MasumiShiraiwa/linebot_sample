@@ -28,14 +28,12 @@ let getGroupList = async (accessToken) => {
 }
 
 let getNotePostList = async (groupId, accessToken) => {
-    const params = {}
     console.log("send request to get note list");
     try{
         const res = await axios.get(`https://www.worksapis.com/v1.0/groups/${groupId}/note/posts`, {
             headers: {
                 "Authorization": `Bearer ${accessToken}`
-            },
-            params: params
+            }
         })
 
         console.log("res.data: ",res.data);
@@ -73,8 +71,29 @@ let getNotePost = async (groupId, postId, accessToken) => {
     }
 }
 
+let postNote = async (groupId, accessToken) => {
+    const params = {}
+    console.log("send request to post note");
+    try{
+        const res = await axios.post(`https://www.worksapis.com/v1.0/groups/${groupId}/note`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            params: params
+        })
+        return res.data;
+    }catch(e){
+        console.error("Error posting note:", e.message);
+        if(e.response){
+            console.error("HTTP Status:", e.response.status);
+            console.error("Response Data:", e.response.data);
+        }
+    }
+}
+
 module.exports = {
     getGroupList,
     getNotePostList,
-    getNotePost
+    getNotePost,
+    postNote
 }
