@@ -60,7 +60,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const privatekey = process.env.LW_API_PRIVATEKEY
     const botId = process.env.LW_API_BOT_ID
 
-    const scope = "bot, bot.read, bot.message, user.read, group.read, group.note"
+    const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
     
     const body = req.body;
     console.debug("Get message body", body)
