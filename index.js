@@ -98,6 +98,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(content.content.type == "text" && userEmail == ownerEmail){
+        const rst = await handleGroup.getGroupList(global_data["access_token"]);
         content = {
             content: {
                 type: "text",
@@ -105,7 +106,6 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(content.content.text == "グループ"){
-        const rst = await handleGroup.getGroupList(global_data["access_token"]);
 
     }else{
         content = {
