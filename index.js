@@ -4,6 +4,7 @@ const { setTimeout } = require('timers/promises');
 const lineworks = require("./lineworks");
 const getUserInfo = require("./getUserInfo");
 const handleDrive = require("./handleDrive");
+const handleGroup = require("./handleGroup");
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -103,6 +104,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
         }
+    }else if(content.content.text == "グループ"){
+        const rst = await handleGroup.getGroupList(global_data["access_token"]);
+
     }else{
         content = {
             content: {

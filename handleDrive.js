@@ -3,15 +3,16 @@ const XLSX = require("xlsx");
 const fileConverter = require("./fileConverter");
 
 /**
- * Download the file from a redirected URL.
+ * Download the file from a redirected URL from a message,
+ * and, convert the file to text data,
+ * and, upload the text data to Folder in Goroup.
  * @async
  * @param {string} botId - Bot ID
  * @param {string} fileId - File ID
  * @param {string} accessToken - Access Token
- * @return {Object} fileResponse - File stream response
+ * @return {Object} textData - Text data
  */
-
-let uploadToDrive = async (botId, fileId, accessToken) => {
+let downloadFromMessage = async (botId, fileId, accessToken) => {
   try {
       const headers = {
           Authorization: `Bearer ${accessToken}`
@@ -66,7 +67,12 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
         console.log("sheetData: ", sheetData, "type: ", typeof(sheetData));
         console.log("sheetData[0]: ", sheetData[0]);
 
-        return await sheetData; // ファイルの内容を配列として返す
+        let textData = fileConverter.excelToTxt(sheetData);
+        console.log("textData: ", textData);
+
+        // Driveにファイルをアップロード
+
+        return await textData; // ファイルの内容を配列として返す
   
       } else {
         throw new Error(`予期しないステータスコード: ${res.status}`);
@@ -80,5 +86,50 @@ let uploadToDrive = async (botId, fileId, accessToken) => {
     }
     throw error;
   }
+}
+
+/**
+ * Download the file from a Folder in Group.
+ * @async
+ * @param {string} accessToken - Access Token
+ * @return {Object} 
+ */
+let downloadFromFolder = async (accessToken) => {
+  try{
+
+  }catch(e){
+    console.error("Error downloading file:", e.message);
+  }
 };
-  module.exports = {uploadToDrive};
+
+
+/**
+ * Upload the text data to Folder in Group.
+ * @async
+ * @param {string} accessToken - Access Token
+ */
+let uploadToFolder = async (accessToken) => {
+
+};
+
+/**
+ * Generate a txt file in Group Folder
+ * from excel data in Group Folder.
+ * @async
+ * @param {string} accessToken - Access Token
+ */
+let generateTxtFile = async (accessToken) => {
+  try{
+    //0. グループへのメッセージによるトリガー
+    //1. フォルダ内のファイルリストを取得
+    //2. ファイルリストから、該当するファイルIDを取得
+    //3. 該当するファイルIDを用いて、ファイルをダウンロード
+    //4. ダウンロードしたファイルをテキストデータに変換
+    //5. テキストデータをファイルに書き込む
+    //6. ファイルをアップロード
+  }catch(e){
+    console.error("Error creating txt file:", e.message);
+  }
+};
+
+  module.exports = {};
