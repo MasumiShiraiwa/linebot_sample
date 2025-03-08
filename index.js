@@ -98,8 +98,8 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(content.content.type == "text" && userEmail == ownerEmail){
-        // const rst = await handleGroup.getGroupList(global_data["access_token"]);
-        const notePostList = await handleGroup.getNotePostList("68d2b697-7c8d-4799-32d5-042944f3671", global_data["access_token"]);
+        const groupList = await handleGroup.getGroupList(global_data["access_token"]);
+        const notePostList = await handleGroup.getNotePostList(groupList[0].id, global_data["access_token"]);
         const notePost = await handleGroup.getNotePost("68d2b697-7c8d-4799-32d5-042944f3671", notePostList[0].id, global_data["access_token"]);
         content = {
             content: {
