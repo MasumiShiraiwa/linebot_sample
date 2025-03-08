@@ -60,7 +60,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const privatekey = process.env.LW_API_PRIVATEKEY
     const botId = process.env.LW_API_BOT_ID
 
-    const scope = "bot,bot.read,user.read,bot.message"
+    const scope = "bot,bot.read,user.read,bot.message,group.read"
     
     const body = req.body;
     console.debug("Get message body", body)
@@ -98,7 +98,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(content.content.type == "text" && userEmail == ownerEmail){
-        // const rst = await handleGroup.getGroupList(global_data["access_token"]);
+        const rst = await handleGroup.getGroupList(global_data["access_token"]);
         // const noteList = await handleGroup.getNoteList(global_data["access_token"], "d9b7aba7-8af2-2bf4-5ff4-4caaa4e33ea4");
         content = {
             content: {

@@ -21,10 +21,18 @@ let sendMessageToUser = async (content, botId, userId, accessToken) => {
         Authorization: `Bearer ${accessToken}`
     };
 
-    const res = await axios.post(`https://www.worksapis.com/v1.0/bots/${botId}/users/${userId}/messages`, content,
-        { headers }
-    );
-    return res;
-};
+    try{
+        const res = await axios.post(`https://www.worksapis.com/v1.0/bots/${botId}/users/${userId}/messages`, content,
+            { headers }
+        );
+        return res;
+    }catch(e){
+        console.error("Error sending message to user:", e.message);
+        if(e.response){
+            console.error("HTTP Status:", e.response.status);
+            console.error("Response Data:", e.response.data);
+        }
+    }
+    };
 
 module.exports = {sendMessageToUser};
