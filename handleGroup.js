@@ -9,7 +9,7 @@ let getGroupList = async (accessToken) => {
     console.log("in getGroupList");
 
     try{
-        const res = await axios.get("https://api.lineworks.net/v1/groups", {
+        const res = await axios.get("https://www.worksapis.com/v1.0/groups", {
             headers: {
                 "Authorization": `Bearer ${accessToken}`
             },
