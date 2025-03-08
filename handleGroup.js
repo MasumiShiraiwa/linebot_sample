@@ -2,13 +2,13 @@ let axios = require("axios");
 
 
 let getGroupList = async (accessToken) => {
-
     const params = {
         domainId: process.env.DOMAIN_ID
     }
-    console.log("in getGroupList");
+    console.log("in getGroupList, domainId: ",process.env.DOMAIN_ID);
 
     try{
+        console.log("send request to get group list");
         const res = await axios.get("https://www.worksapis.com/v1.0/groups", {
             headers: {
                 "Authorization": `Bearer ${accessToken}`
