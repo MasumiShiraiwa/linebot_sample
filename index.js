@@ -105,8 +105,6 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
         }
-    }else if(content.content.text == "グループ"){
-
     }else{
         content = {
             content: {
