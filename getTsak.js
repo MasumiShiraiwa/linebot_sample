@@ -19,9 +19,8 @@ let getTaskList = async (userId, accessToken) => {
             console.error("Response Data:", e.response.data);
         }
     }
-}
-
+};
 
 module.exports = {
     getTaskList
-}
+};

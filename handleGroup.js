@@ -25,7 +25,7 @@ let getGroupList = async (accessToken) => {
             console.error("Response Data:", e.response.data);
         }
     }
-}
+};
 
 let getNotePostList = async (groupId, accessToken) => {
     console.log("send request to get note list");
@@ -46,7 +46,7 @@ let getNotePostList = async (groupId, accessToken) => {
             console.error("Response Data:", e.response.data);
         }
     }
-}
+};
 
 let getNotePost = async (groupId, postId, accessToken) => {
     const params = {
@@ -69,7 +69,7 @@ let getNotePost = async (groupId, postId, accessToken) => {
             console.error("Response Data:", e.response.data);
         }
     }
-}
+};
 
 let postNote = async (groupId, accessToken) => {
     console.log("send request to post note");
@@ -101,11 +101,11 @@ let postNote = async (groupId, accessToken) => {
             console.error("Response Data:", e.response.data);
         }
     }
-}
+};
 
 module.exports = {
     getGroupList,
     getNotePostList,
     getNotePost,
     postNote
-}
+};
