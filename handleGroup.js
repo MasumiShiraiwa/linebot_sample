@@ -72,15 +72,22 @@ let getNotePost = async (groupId, postId, accessToken) => {
 }
 
 let postNote = async (groupId, accessToken) => {
-    const params = {}
     console.log("send request to post note");
     try{
-        const res = await axios.post(`https://www.worksapis.com/v1.0/groups/${groupId}/note`, {
+        const res = await axios.post(`https://www.worksapis.com/v1.0/groups/${groupId}/note/posts`, {
             headers: {
-                "Authorization": `Bearer ${accessToken}`
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
             },
-            params: params
+            data: {
+                "title": "WORKS 利用案内",
+                "body": "<h1> WORKS 利用ガイド </h1>LINE WORKS のご利用に関して以下の通りご案内致します。",
+                "enableCollaboration": true,
+                "sendNotifications": true,
+                "isNotice": false
+              }
         })
+        console.log("res.data: ",res.data);
         return res.data;
     }catch(e){
         console.error("Error posting note:", e.message);

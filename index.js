@@ -100,12 +100,14 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     }else if(content.content.type == "text" && userEmail == ownerEmail){
         const groupList = await handleGroup.getGroupList(global_data["access_token"]);
         const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
-        const notePostList = await handleGroup.getNotePostList(groupList[0].groupId, global_data["access_token"]);
-        const notePost = await handleGroup.getNotePost("68d2b697-7c8d-4799-32d5-042944f3671", notePostList[0].postId, global_data["access_token"]);
+        // const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
+        // const notePostList = await handleGroup.getNotePostList(groupList[0].groupId, global_data["access_token"]);
+        // const notePost = await handleGroup.getNotePost("68d2b697-7c8d-4799-32d5-042944f3671", notePostList[0].postId, global_data["access_token"]);
         content = {
             content: {
                 type: "text",
-                text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
+                text: JSON.stringify(res)
+                // text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
                 // text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
         }
