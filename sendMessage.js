@@ -33,6 +33,6 @@ let sendMessageToUser = async (content, botId, userId, accessToken) => {
             console.error("Response Data:", e.response.data);
         }
     }
-    };
+};
 
 module.exports = {sendMessageToUser};
