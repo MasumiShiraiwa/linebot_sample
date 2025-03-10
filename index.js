@@ -6,6 +6,7 @@ const lineworks = require("./lineworks");
 const getUserInfo = require("./getUserInfo");
 const handleDrive = require("./handleDrive");
 const handleGroup = require("./handleGroup");
+const getTask = require("./getTask");
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -77,7 +78,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const privatekey = process.env.LW_API_PRIVATEKEY
     const botId = process.env.LW_API_BOT_ID
 
-    const scope = "group.note, bot, user.read"
+    const scope = "group.note, bot, user.read, task"
     // const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
     
     const body = req.body;
@@ -121,6 +122,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         }
     }else if(content.content.type == "text" && userEmail == ownerEmail){
         const groupList = await handleGroup.getGroupList(global_data["access_token"]);
+        const taskList = await getTask.getTaskList(senderId, global_data["access_token"]);
         const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
         // const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
         // const notePostList = await handleGroup.getNotePostList(groupList[0].groupId, global_data["access_token"]);
