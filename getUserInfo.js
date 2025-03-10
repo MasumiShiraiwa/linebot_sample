@@ -11,6 +11,7 @@ const axios = require("axios");
  */
 
 let getUserInformation = async (userId, accessToken) => {
+    console.log("get user information");
     const headers = {
         Authorization: `Bearer ${accessToken}`
     };

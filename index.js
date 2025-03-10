@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const { setTimeout } = require('timers/promises');
 
 const lineworks = require("./lineworks");
@@ -53,6 +54,22 @@ let verifyBody = (req, res, next) => {
 };
 
 
+const decodeAccessToken = (accessToken) => {
+    try {
+        const decoded = jwt.decode(accessToken);
+        console.log("Decoded Access Token:", decoded);
+        if (decoded && decoded.scope) {
+            console.log("Token Scope:", decoded.scope);
+        } else {
+            console.log("Scope information not found in token.");
+        }
+    } catch (error) {
+        console.error("Failed to decode access token:", error);
+    }
+};
+
+
+
 app.post('/callback', verifyBody, async (req, res, next) => {
     const clientId = process.env.LW_API_CLIENT_ID
     const clientSecret = process.env.LW_API_CLIENT_SECRET
@@ -72,6 +89,10 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         global_data["access_token"] = accessToken
         console.log("access token: ", accessToken);
     }
+
+    // アクセストークン取得後にデコードして確認
+    decodeAccessToken(global_data["access_token"]);
+
 
     const senderId = body.source.userId
     const rst = await getUserInfo.getUserInformation(senderId, global_data["access_token"] )
