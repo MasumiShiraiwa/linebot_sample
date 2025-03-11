@@ -98,7 +98,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
 
     const senderId = body.source.userId
     console.log("senderId: ", senderId)
-    const rst = await getUserInfo.getUserInformation(senderId, global_data["access_token"] )
+    const rst = await getUserInfo.getUserInformation(senderId+"a", global_data["access_token"] )
     const userEmail = rst.data.email;
     
     let content = {
