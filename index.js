@@ -78,7 +78,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const privatekey = process.env.LW_API_PRIVATEKEY
     const botId = process.env.LW_API_BOT_ID
 
-    const scope = "group.note, bot, user.read, task"
+    const scope = "group.note, group.read, bot, bot.message, user.read, task"
     // const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
     
     const body = req.body;
@@ -97,6 +97,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
 
 
     const senderId = body.source.userId
+    console.log("senderId: ", senderId)
     const rst = await getUserInfo.getUserInformation(senderId, global_data["access_token"] )
     const userEmail = rst.data.email;
     

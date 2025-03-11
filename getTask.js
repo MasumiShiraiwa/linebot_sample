@@ -3,6 +3,7 @@ const axios = require("axios");
 
 let getTaskList = async (userId, accessToken) => {
     console.log("get task list");
+    console.log("type of userId: ", typeof(userId))
     const headers = {
         Authorization: `Bearer ${accessToken}`
     };

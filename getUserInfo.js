@@ -16,9 +16,17 @@ let getUserInformation = async (userId, accessToken) => {
         Authorization: `Bearer ${accessToken}`
     };
 
-    const res = await axios.get(`https://www.worksapis.com/v1.0/users/${userId}`, {headers});
-
-    return res;
+    try{
+        const res = await axios.get(`https://www.worksapis.com/v1.0/users/${userId}`, {headers});
+        return res;
+    }catch(e){
+        console.error("Error getting user information:", e.message);
+        if(e.response){
+            console.error("HTTP Status:", e.response.status);   
+            console.error("Response Data:", e.response.data);
+        }
+    }
+    
 };
 
 module.exports = { getUserInformation };
