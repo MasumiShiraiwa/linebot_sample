@@ -39,27 +39,32 @@ let getTaskList = async (userId, accessToken) => {
     }
 };
 
-// let postTask = async (userId, accessToken) => {
-//     console.log("post task");
-//     const headers = {
-//         Authorization: `Bearer ${accessToken}`
-//     };
-//     const params = {
-//         "assignorId": userId,
-//         "assignees": [
-//           {
-//             "assigneeId": userId,
-//             "status": "TODO"
-//           }
-//         ],
-//         "title": "週次会議の予定",
-//         "content": "会議室の予約",
-//         "dueDate": "2024-05-25",
-//         "completionCondition": "ANY_ONE",
-//         "categoryId": "7f5078df-bf67-417c-a559-f5539e59bd0d"
-//       }
-    
-// }
+let postTask = async (userId, accessToken) => {
+    console.log("post task");
+    const headers = {
+        Authorization: `Bearer ${accessToken}`
+    };
+    const params = {
+        "assignorId": userId,
+        "assignees": [
+          {
+            "assigneeId": userId,
+            "status": "TODO"
+          }
+        ],
+        "title": "週次会議の予定",
+        "content": "会議室の予約",
+        "dueDate": "2024-05-25",
+        "completionCondition": "ANY_ONE",
+        "categoryId": "7f5078df-bf67-417c-a559-f5539e59bd0d"
+      }
+    try{
+        const res = await axios.post(`https://www.worksapis.com/v1.0/users/${userId}/tasks`, {params}, {headers});
+        return res.data;
+    }catch(e){
+        console.error("Error posting task:", e.message);
+    }
+}
 
 module.exports = {
     getTaskCategoryList,

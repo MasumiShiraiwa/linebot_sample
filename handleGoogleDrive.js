@@ -1,79 +1,32 @@
 const { google } = require("googleapis");
-const fs = require("fs");
 
-// 環境変数からGoogle Drive認証情報を取得
-const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 
-const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ["https://www.googleapis.com/auth/drive.file"] // ここでスコープを指定
-});
+const SCOPES = [`https://www.googleapis.com/auth/drive.file`]
 
-// Google Drive APIの初期化
-const drive = google.drive({ version: "v3", auth });
-
-let uploadToGoogleDrive = async (botId, fileId, accessToken) => {
-    try{
-        const headers = {
-            Authorization: `Bearer ${accessToken}`
-        };
-
-        const res = await axios.get(
-            {
-                headers: headers,
-                maxRedirects: 0, // これを設定しないとリダイレクトが自動で処理されてしまう
-                validateStatus: status => status === 302 || (status >= 200 && status < 300)
-            }
-        );
-        console.debug("responce for getting redirect URL: ", res.headers);
-          
-        if(res.status === 302){
-            const downloadUrl = res.headers.location;
-            if(!downloadUrl){
-                throw new Error("リダイレクト URL が見つかりません");
-            }
-            console.log("Download URL:", downloadUrl);
-
-            const fileResponse = await axios.get(downloadUrl, {
-                headers: headers,
-                responseType: "stream"
-            });
-
-            // ステータスコードチェック
-            if(fileResponse.status < 200 || fileResponse.status >= 300){
-                throw new Error(`ファイルダウンロードに失敗しました: ${fileResponse.status}`);
-            }
-
-            // ストリームをバッファとして読み込む
-            const buffers = [];
-            fileResponse.data.on('data', chunk => {
-                buffers.push(chunk);
-            });
-
-            
-            
-            
-        } else {
-            throw new Error(`予期しないステータスコード: ${res.status}`);
+let authorize = async () => {
+    const auth = new google.auth.GoogleAuth({
+        scopes: SCOPES,
+        credentials: {
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY
         }
+    });
+    const drive = google.drive({version: "v3", auth});
+    return drive;
+}
 
+let getListOfFiles = async () => {
+    const drive = await authorize();
+    const params = {pageSize: 100}
+    const res = await drive.files.list(params);
+    console.log(res.data.files);
+    return res.data.files;
+}
 
-    } catch(e){
-        console.error("Error upload file: ", e.message);
-        if(e.response){
-            console.error("HTTP Status:", e.response.status);
-            console.error("Response Data:", e.response.data);
-        }
-        throw e;
-    }
-};
+let uploadToDrive = async (botId, fileId, accessToken) => {
+    const drive = await authorize();
+    const file = await drive.files.get({fileId: fileId});
+    return file;
+}
 
-let downloadFromGoogleDrive = async () => {
-    try{
-
-    }catch(e){
-        console.error("Error download file: ", e);
-    }
-};
-
-module.exports = {uploadToGoogleDrive, downloadFromGoogleDrive};
+module.exports = {uploadToDrive, getListOfFiles};

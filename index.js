@@ -3,10 +3,11 @@ const jwt = require('jsonwebtoken');
 const { setTimeout } = require('timers/promises');
 
 const lineworks = require("./lineworks");
+const handleMessage = require("./handleMessage");
 const getUserInfo = require("./getUserInfo");
 const handleDrive = require("./handleDrive");
 const handleGroup = require("./handleGroup");
-const getTask = require("./getTask");
+const handleGoogleDrive = require("./handleGoogleDrive");
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -55,21 +56,6 @@ let verifyBody = (req, res, next) => {
 };
 
 
-const decodeAccessToken = (accessToken) => {
-    try {
-        const decoded = jwt.decode(accessToken);
-        console.log("Decoded Access Token:", decoded);
-        if (decoded && decoded.scope) {
-            console.log("Token Scope:", decoded.scope);
-        } else {
-            console.log("Scope information not found in token.");
-        }
-    } catch (error) {
-        console.error("Failed to decode access token:", error);
-    }
-};
-
-
 
 app.post('/callback', verifyBody, async (req, res, next) => {
     const clientId = process.env.LW_API_CLIENT_ID
@@ -92,16 +78,13 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         console.log("access token: ", accessToken);
     }
 
-    // アクセストークン取得後にデコードして確認
-    decodeAccessToken(global_data["access_token"]);
-
 
     const senderId = body.source.userId
     console.log("senderId: ", senderId)
-    const rst = await getUserInfo.getUserInformation(senderId+"a", global_data["access_token"] )
+    const rst = await getUserInfo.getUserInformation(senderId, global_data["access_token"] )
     const userEmail = rst.data.email;
     
-    let content = {
+    let recivedContent = {
         content: body.content
     }
 
@@ -109,9 +92,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
      * 受信したメッセージの"送信者"と"メッセージタイプ"をもとに、処理を分ける
      */
     // 管理者からファイルを送られた場合
-    if (content.content.type == "file" && userEmail == ownerEmail){
+    if (recivedContent.content.type == "file" && userEmail == ownerEmail){
         //Excel Fileの取得と検証？ファイル名から月を判別する？
-        const res = await handleDrive.uploadToDrive(botId, content.content.fileId, global_data["access_token"]);
+        const res = await handleDrive.uploadToDrive(botId, recivedContent.content.fileId, global_data["access_token"]);
         
         if(true){
             content = {
@@ -121,10 +104,11 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 }
             }
         }
-    }else if(content.content.type == "text" && userEmail == ownerEmail){
-        const groupList = await handleGroup.getGroupList(global_data["access_token"]);
-        const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);
-        const taskList = await getTask.getTaskList(senderId, global_data["access_token"]);
+    }else if(recivedContent.content.type == "text" && userEmail == ownerEmail){
+        const listOfFiles = await handleGoogleDrive.getListOfFiles();
+        // const groupList = await handleGroup.getGroupList(global_data["access_token"]);
+        // const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);
+        // const taskList = await getTask.getTaskList(senderId, global_data["access_token"]);
         // const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
         // const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
         // const notePostList = await handleGroup.getNotePostList(groupList[0].groupId, global_data["access_token"]);
@@ -132,7 +116,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         content = {
             content: {
                 type: "text",
-                text: JSON.stringify(res)
+                text: JSON.stringify(listOfFiles)
                 // text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
                 // text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
@@ -152,7 +136,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             // Send message
             console.debug("Send message", content)
 
-            const rst = await lineworks.sendMessageToUser(content, botId, senderId, global_data["access_token"])
+            const rst = await handleMessage.sendMessageToUser(content, botId, senderId, global_data["access_token"])
             console.debug("Success sending message", rst.status)
             res.send("success")
             break
