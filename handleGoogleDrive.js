@@ -4,6 +4,10 @@ const { google } = require("googleapis");
 const SCOPES = [`https://www.googleapis.com/auth/drive.file`]
 
 let authorize = async () => {
+    console.log(process.env.GOOGLE_CLIENT_EMAIL);
+    console.log(process.env.GOOGLE_PRIVATE_KEY);
+    console.log("--------------------------------");
+    console.log("Get Access Token");
     const auth = new google.auth.GoogleAuth({
         scopes: SCOPES,
         credentials: {
@@ -18,6 +22,7 @@ let authorize = async () => {
 let getListOfFiles = async () => {
     const drive = await authorize();
     const params = {pageSize: 100}
+    console.log("Get List of Files");
     const res = await drive.files.list(params);
     console.log(res.data.files);
     return res.data.files;
