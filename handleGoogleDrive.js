@@ -1,7 +1,7 @@
 const { google } = require("googleapis");
 
 
-const SCOPES = [`https://www.googleapis.com/auth/drive`]
+const SCOPES = [`https://www.googleapis.com/auth/drive.metadata.readonly`]
 
 let authorize = async () => {
     console.log(process.env.GOOGLE_CLIENT_EMAIL);
