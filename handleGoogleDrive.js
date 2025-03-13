@@ -23,9 +23,14 @@ let getListOfFiles = async () => {
     const drive = await authorize();
     const params = {pageSize: 100}
     console.log("Get List of Files");
-    const res = await drive.files.list(params);
-    console.log(res.data.files);
-    return res.data.files;
+    try{
+        const res = await drive.files.list(params);
+        console.log(res.data.files);
+        return res.data.files;
+    }catch(err){
+        console.log(err);
+        return [];
+    }
 }
 
 let uploadToDrive = async (botId, fileId, accessToken) => {
