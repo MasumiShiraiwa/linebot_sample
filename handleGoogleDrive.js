@@ -4,17 +4,18 @@ const { google } = require("googleapis");
 const SCOPES = [`https://www.googleapis.com/auth/drive.metadata.readonly`]
 
 let authorize = async () => {
-    console.log(process.env.GOOGLE_CLIENT_EMAIL);
-    console.log(process.env.GOOGLE_PRIVATE_KEY);
+    cconsole.log("GOOGLE_CLIENT_EMAIL:", process.env.GOOGLE_CLIENT_EMAIL);
+    console.log("GOOGLE_PRIVATE_KEY exists:", !!process.env.GOOGLE_PRIVATE_KEY);
+
     console.log("--------------------------------");
     console.log("Get Access Token");
-    const auth = new google.auth.GoogleAuth({
-        scopes: SCOPES,
-        credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
-        }
-    });
+    const auth = new google.auth.JWT(
+        process.env.GOOGLE_CLIENT_EMAIL,
+        null,
+        process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // 改行処理
+        SCOPES
+    );
+
     const drive = google.drive({version: "v3", auth});
     return drive;
 }
