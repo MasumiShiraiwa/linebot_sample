@@ -4,7 +4,7 @@ const { google } = require("googleapis");
 const SCOPES = [`https://www.googleapis.com/auth/drive.metadata.readonly`]
 
 let authorize = async () => {
-    cconsole.log("GOOGLE_CLIENT_EMAIL:", process.env.GOOGLE_CLIENT_EMAIL);
+    console.log("GOOGLE_CLIENT_EMAIL:", process.env.GOOGLE_CLIENT_EMAIL);
     console.log("GOOGLE_PRIVATE_KEY exists:", !!process.env.GOOGLE_PRIVATE_KEY);
 
     console.log("--------------------------------");
@@ -15,6 +15,7 @@ let authorize = async () => {
         process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // 改行処理
         SCOPES
     );
+    
 
     const drive = google.drive({version: "v3", auth});
     return drive;
