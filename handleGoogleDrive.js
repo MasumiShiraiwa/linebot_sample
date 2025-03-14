@@ -9,22 +9,24 @@ let authorize = async () => {
 
     console.log("--------------------------------");
     console.log("Get Access Token");
-    const auth = new google.auth.JWT(
+    const auth_JWT = new google.auth.JWT(
         process.env.GOOGLE_CLIENT_EMAIL,
         null,
         process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), // 改行処理
         SCOPES
     );
+    console.log(typeof(auth_JWT))
     
 
     // const drive = google.drive({version: "v3", auth});
-    // const auth = new google.auth.GoogleAuth({
-    //     scopes: SCOPES,
-    //     credentials: {
-    //         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    //         private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
-    //     },
-    // });
+    const auth = new google.auth.GoogleAuth({
+        scopes: SCOPES,
+        credentials: {
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+        },
+    });
+    console.log(typeof(auth))
     
     const authClient = await auth.getClient();
     const drive = google.drive({version: "v3", auth: authClient});
