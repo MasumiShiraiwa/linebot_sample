@@ -2,7 +2,7 @@ const { google } = require("googleapis");
 const XLSX = require("xlsx");
 
 
-const SCOPES = [`https://www.googleapis.com/auth/drive.metadata.readonly`]
+const SCOPES = [`https://www.googleapis.com/auth/drive`]
 
 let authorize = async () => {
     console.log("GOOGLE_CLIENT_EMAIL:", process.env.GOOGLE_CLIENT_EMAIL);
