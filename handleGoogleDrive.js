@@ -52,7 +52,7 @@ let getExcelFile = async (fileId) => {
     const drive = await authorize();
     let file;
     try{
-        file = await drive.files.get({fileId: fileId});
+        file = await drive.files.get({fileId: fileId}, {responseType: "stream"});
     }catch(err){
         console.log(err);
         return null;
@@ -81,7 +81,7 @@ let getExcelFile = async (fileId) => {
 }
 
 let postTextFile = async (text) => {
-    
+
 }
 
 module.exports = {getListOfFiles, getExcelFile, postTextFile};

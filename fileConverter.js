@@ -16,10 +16,16 @@ let excelToTxt = async (excelData) => {
     // textDataの中身は、[
     //     [
     //         {
-    //             name: "name".
+    //             id: "id".
     //             time: "time".
     //         }, ..., {}
-    //     ]
+    //     ],
+    //     [
+    //         {
+    //             id: "id".
+    //             time: "time".
+    //         }, ..., {}
+    //     ],
     // ]
     let col = 0;
     while(true){
@@ -29,7 +35,7 @@ let excelToTxt = async (excelData) => {
         let row = 0; //【要変更】最初に社員IDがある行
         while(excelData[row][0] !== null){
             date.push({
-                name: excelData[row][1],
+                id: excelData[row][0],
                 time: excelData[row][col],
             });
             row++;
