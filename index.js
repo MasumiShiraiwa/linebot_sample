@@ -104,8 +104,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 }
             }
         }
-    }else if(recivedContent.content.type == "text" && userEmail == ownerEmail){
-        const listOfFiles = await handleGoogleDrive.getListOfFiles();
+    }else if(userEmail == ownerEmail && recivedContent.content.type == "text" && recivedContent.content.text == "シフト更新"){
+        const excelFile = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
+        // const listOfFiles = await handleGoogleDrive.getListOfFiles();
         // const groupList = await handleGroup.getGroupList(global_data["access_token"]);
         // const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);
         // const taskList = await getTask.getTaskList(senderId, global_data["access_token"]);
@@ -116,7 +117,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         content = {
             content: {
                 type: "text",
-                text: JSON.stringify(listOfFiles)
+                text: JSON.stringify(excelFile)
                 // text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
                 // text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
