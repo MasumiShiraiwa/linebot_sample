@@ -50,8 +50,9 @@ let getListOfFiles = async () => {
 
 let getExcelFile = async (fileId) => {
     const drive = await authorize();
+    let file;
     try{
-        const file = await drive.files.get({fileId: fileId});
+        file = await drive.files.get({fileId: fileId});
     }catch(err){
         console.log(err);
         return null;
@@ -79,10 +80,8 @@ let getExcelFile = async (fileId) => {
 
 }
 
-let uploadToDrive = async (botId, fileId, accessToken) => {
-    const drive = await authorize();
-    const file = await drive.files.get({fileId: fileId});
-    return file;
+let postTextFile = async (text) => {
+    
 }
 
-module.exports = {uploadToDrive, getListOfFiles, getExcelFile};
+module.exports = {getListOfFiles, getExcelFile, postTextFile};
