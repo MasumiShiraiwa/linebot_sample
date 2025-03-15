@@ -53,7 +53,7 @@ let getExcelFile = async (fileId) => {
     const drive = await authorize();
     let file;
     try{
-        file = await drive.files.get({fileId: fileId}, {responseType: "stream"});
+        file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
     }catch(err){
         console.log(err);
         return null;
