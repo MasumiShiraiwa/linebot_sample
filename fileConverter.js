@@ -12,7 +12,6 @@ let excelToTxt = async (excelData) => {
     //         
     //     ]
     
-    let textData = [];
     // textDataの中身は、[
     //     [
     //         {
@@ -27,26 +26,33 @@ let excelToTxt = async (excelData) => {
     //         }, ..., {}
     //     ],
     // ]
-    let col = 0;
+    let textData = [];
+    const idCol = 0; // 【要変更】社員IDの列
+    const totalRow = 0; // 【要変更】"Total"の列
+    let col = 2; // シフト表の最初の列で初期化
     while(true){
+        if(excelData[totalRow][col] === "Total"){ //【要変更】"Total"の列で終了
+            break;
+        };
+
         let date = [];
         //ここから各行を見ていく
         //まず、０列目に社員IDがあれば(=nullでなければ)、colの列を取得する
-        let row = 0; //【要変更】最初に社員IDがある行
-        while(excelData[row][0] !== null){
+        let row = 2; //【要変更】最初に社員IDがある行(荒川さんの行)で初期化
+        while(excelData[row][idCol] !== null){
             date.push({
-                id: excelData[row][0],
+                id: excelData[row][idCol],
                 time: excelData[row][col],
             });
-            row++;
+            row++; //【要変更】 ２つ飛ばしの場合は？
         }
 
-        if(excelData[0][col] === "Total"){
-            break;
-        };
-        textData.push(JSON.parse(JSON.stringify(date)));
+        // textData.push(JSON.parse(JSON.stringify(date)));
+        textData.push(date);
         col++;
     }
+
+    console.log("textData: ", textData);
 
     return textData;
 };

@@ -1,4 +1,5 @@
 const { google } = require("googleapis");
+const XLSX = require("xlsx");
 
 
 const SCOPES = [`https://www.googleapis.com/auth/drive.metadata.readonly`]
@@ -74,7 +75,10 @@ let getExcelFile = async (fileId) => {
     const sheetName = workbook.SheetNames[0];
     const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
     console.log("sheetData: ", sheetData, "type: ", typeof(sheetData));
-    console.log("sheetData[0]: ", sheetData[0]);
+    
+    for (let i = 0; i < 3; i++){
+        console.log("sheetData[", i, "]: ", sheetData[i]);
+    }
 
     return sheetData; // 一時的にファイルの内容を配列として返す
 
