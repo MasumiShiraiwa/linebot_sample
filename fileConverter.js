@@ -5,7 +5,7 @@ const { datacatalog } = require("googleapis/build/src/apis/datacatalog");
  * @param {Array} excelData - list of Excel file data
  * @returns {Array} textData - list of TXT file data
  */
-let excelToTxt = async (excelData) => {
+let excelToTxt = (excelData) => {
     // ファイルデータを配列として受け取る
     // 配列の中身は、[
     //     [

@@ -8,6 +8,7 @@ const getUserInfo = require("./getUserInfo");
 const handleDrive = require("./handleDrive");
 const handleGroup = require("./handleGroup");
 const handleGoogleDrive = require("./handleGoogleDrive");
+const fileConverter = require("./fileConverter")
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -105,7 +106,9 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(userEmail == ownerEmail && recivedContent.content.type == "text" && recivedContent.content.text == "シフト更新"){
-        const excelFile = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
+        const excelData = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
+        const textData = fileConverter.excelToTxt(excelData)
+        
         // const listOfFiles = await handleGoogleDrive.getListOfFiles();
         // const groupList = await handleGroup.getGroupList(global_data["access_token"]);
         // const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);
@@ -117,7 +120,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         content = {
             content: {
                 type: "text",
-                text: JSON.stringify(excelFile)
+                text: JSON.stringify(textData)
                 // text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
                 // text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
             }
