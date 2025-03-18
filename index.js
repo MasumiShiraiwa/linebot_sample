@@ -107,8 +107,8 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         }
     }else if(userEmail == ownerEmail && recivedContent.content.type == "text" && recivedContent.content.text == "シフト更新"){
         const excelData = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
-        const textData = fileConverter.excelToTxt(excelData)
-        
+        const textData = fileConverter.excelToTxt(excelData);
+        const res = handleGoogleDrive.postJsonFile(textData);
         // const listOfFiles = await handleGoogleDrive.getListOfFiles();
         // const groupList = await handleGroup.getGroupList(global_data["access_token"]);
         // const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);

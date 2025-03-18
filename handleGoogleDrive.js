@@ -1,6 +1,7 @@
+const { text } = require("express");
 const { google } = require("googleapis");
 const XLSX = require("xlsx");
-
+const stream = require("stream");
 
 const SCOPES = [`https://www.googleapis.com/auth/drive`]
 
@@ -33,7 +34,7 @@ let authorize = async () => {
 
 
     return drive;
-}
+};
 
 let getListOfFiles = async () => {
     const drive = await authorize();
@@ -47,7 +48,7 @@ let getListOfFiles = async () => {
         console.log(err);
         return [];
     }
-}
+};
 
 let getExcelFile = async (fileId) => {
     const drive = await authorize();
@@ -82,10 +83,36 @@ let getExcelFile = async (fileId) => {
 
     return sheetData; // 一時的にファイルの内容を配列として返す
 
-}
+};
 
-let postTextFile = async (text) => {
+let postJsonFile = async (textData) => {
+    try{
+        const drive = await authorize();
 
-}
+        const jsonData = JSON.stringify(textData, null, 2)
 
-module.exports = {getListOfFiles, getExcelFile, postTextFile};
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(jsonData);
+
+        console.log(`jsonData: ${jsonData}`);
+
+        console.log("upload json file");
+        const res = await drive.files.create({
+            requestBody: {
+                name: "reminder_list",
+                mimeType: "application/json",
+            },
+            media: {
+                mimeType: "application/json",
+                body: bufferStream,
+            },
+        });
+
+        console.log("File uploaded succesfully: ", res.data);
+
+    } catch (e) {
+        console.error("Error uploading file:", error);
+    }
+};
+
+module.exports = {getListOfFiles, getExcelFile, postJsonFile};
