@@ -8,7 +8,8 @@ const getUserInfo = require("./getUserInfo");
 const handleDrive = require("./handleDrive");
 const handleGroup = require("./handleGroup");
 const handleGoogleDrive = require("./handleGoogleDrive");
-const fileConverter = require("./fileConverter")
+const fileConverter = require("./fileConverter");
+const { totalmem } = require('os');
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -110,11 +111,11 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         const fileList = await handleGoogleDrive.getListOfFiles();
         const month = new Date().getMonth() + 1;
         let shiftFileId = undefined;
-        let fileName = ["NEWoMan新宿" + month + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
+        let fileName = ["NEWoMan新宿" + String(month) + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
         for (let i = 0; i < fileList.length; i++){
             console.log(fileName, fileList[i].name)
             if(fileName.includes(fileList[i].name)){
-                console.log("今月分を取得できました。");
+                console.log(String(month), "月分のシフト表を取得できました。");
                 shiftFileId = fileList[i].id;
             }
         };
@@ -126,7 +127,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         // const excelData = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
         const textData = fileConverter.excelToTxt(excelData);
         console.log(process.env.GOOGLE_DRIVE_NB_FOLDER_ID);
-        const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData);
+        const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
         // const res = await handleGoogleDrive.postJsonFile("1qK_iDeV9NL0-fBNGbzEE_KJ0EORChgjz", textData);
         
         
@@ -201,9 +202,38 @@ app.post('/callback', verifyBody, async (req, res, next) => {
 
 
 // GASからのリクエストを受ける
+// 【要変更】 REST_APIに則ってResponseを返す
 app.post("/remind", async (req, res, next) => {
     const body = req.body;
     console.debug("Get message body", body)
 
+    const fileList = await handleGoogleDrive.getListOfFiles();
+    console.log(fileList.length)
+    const month = new Date().getMonth() + 1;
+    let jsonFileId = undefined;
+    let fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
+    for (let i = 0; i < fileList.length; i++){
+        console.log(fileName, fileList[i].name)
+        if(fileName.includes(fileList[i].name)){
+            console.log(String(month), "月分のJsonファイルを取得できました。");
+            jsonFileId = fileList[i].id;
+        }
+    };
+
+    if (!jsonFileId) {
+        return res.status(403).json({ error: "該当するJSONファイルが見つかりませんでした。" });
+    }
+    const jsonData = await handleGoogleDrive.getJsonFile(jsonFileId);
+
+
+    const tomorrow = new Date().getDate() + 1;
+    const tomorrow_idx = tomorrow - 1;
+    console.log("明日は", tomorrow, "日です");
+
+
+    
+    let remindList = jsonData[tomorrow_idx];
+
+    return res.json(remindList);
 
 });

@@ -2,6 +2,7 @@ const { text } = require("express");
 const { google } = require("googleapis");
 const XLSX = require("xlsx");
 const stream = require("stream");
+const { json } = require("stream/consumers");
 
 const SCOPES = [`https://www.googleapis.com/auth/drive`]
 
@@ -45,7 +46,7 @@ let getListOfFiles = async () => {
         console.log(res.data.files);
         return res.data.files;
     }catch(err){
-        console.log(err);
+        console.log("Error in getListOfFiles", err);
         return [];
     }
 };
@@ -85,7 +86,7 @@ let getExcelFile = async (fileId) => {
 
 };
 
-let postJsonFile = async (fileId,textData) => {
+let postJsonFile = async (fileId,textData, fileName) => {
     try{
         const drive = await authorize();
 
@@ -99,7 +100,7 @@ let postJsonFile = async (fileId,textData) => {
         console.log("upload json file");
         const res = await drive.files.create({
             requestBody: {
-                name: "a.json",
+                name: fileName + ".json",
                 mimeType: "application/json",
                 parents: [fileId], // Google DriveのフォルダID
             },
@@ -116,4 +117,31 @@ let postJsonFile = async (fileId,textData) => {
     }
 };
 
-module.exports = {getListOfFiles, getExcelFile, postJsonFile};
+let getJsonFile = async (fileId) => {
+    const drive = await authorize();
+    let file;
+    try{
+        file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
+    }catch(err){
+        console.log(err);
+        return null;
+    }
+
+    // ストリームをバッファとして読み込む
+    const buffers = [];
+    await new Promise((resolve, reject) => {
+        file.data.on('data', (chunk) => buffers.push(chunk));
+        file.data.on('end', resolve);
+        file.data.on('error', reject);
+    });
+
+    // バッファを1つのファイルデータに統合
+    const fileBuffer = Buffer.concat(buffers);
+
+    let jsonData = JSON.parse(fileBuffer);
+    console.log("jsonData: ", jsonData, "type: ", typeof(jsonData));
+
+    return jsonData;
+}
+
+module.exports = {getListOfFiles, getExcelFile, postJsonFile, getJsonFile};
