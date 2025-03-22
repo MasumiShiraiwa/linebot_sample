@@ -85,7 +85,7 @@ let getExcelFile = async (fileId) => {
 
 };
 
-let postJsonFile = async (textData) => {
+let postJsonFile = async (fileId,textData) => {
     try{
         const drive = await authorize();
 
@@ -99,8 +99,9 @@ let postJsonFile = async (textData) => {
         console.log("upload json file");
         const res = await drive.files.create({
             requestBody: {
-                name: "reminder_list",
+                name: "a.json",
                 mimeType: "application/json",
+                parents: [fileId], // Google DriveのフォルダID
             },
             media: {
                 mimeType: "application/json",
@@ -111,7 +112,7 @@ let postJsonFile = async (textData) => {
         console.log("File uploaded succesfully: ", res.data);
 
     } catch (e) {
-        console.error("Error uploading file:", error);
+        console.error("Error uploading file:", e);
     }
 };
 

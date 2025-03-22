@@ -62,7 +62,8 @@ app.post('/callback', verifyBody, async (req, res, next) => {
     const clientId = process.env.LW_API_CLIENT_ID
     const clientSecret = process.env.LW_API_CLIENT_SECRET
     const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
-    const privatekey = process.env.LW_API_PRIVATEKEY
+    // const privatekey = process.env.LW_API_PRIVATEKEY // Rneder.comの場合
+    const privatekey = process.env.LW_API_PRIVATEKEY.replace(/\\n/g, '\n'); // ローカルサーバの場合
     const botId = process.env.LW_API_BOT_ID
 
     const scope = "group.note, group.read, bot, bot.message, user.read, task"
@@ -106,9 +107,30 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }else if(userEmail == ownerEmail && recivedContent.content.type == "text" && recivedContent.content.text == "シフト更新"){
-        const excelData = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
+        const fileList = await handleGoogleDrive.getListOfFiles();
+        const month = new Date().getMonth() + 1;
+        let shiftFileId = undefined;
+        let fileName = ["NEWoMan新宿" + month + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
+        for (let i = 0; i < fileList.length; i++){
+            console.log(fileName, fileList[i].name)
+            if(fileName.includes(fileList[i].name)){
+                console.log("今月分を取得できました。");
+                shiftFileId = fileList[i].id;
+            }
+        };
+        if(shiftFileId == null){
+            console.log(fileName + "が見つかりません")
+            return;
+        }
+        const excelData = await handleGoogleDrive.getExcelFile(shiftFileId);
+        // const excelData = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
         const textData = fileConverter.excelToTxt(excelData);
-        const res = handleGoogleDrive.postJsonFile(textData);
+        console.log(process.env.GOOGLE_DRIVE_NB_FOLDER_ID);
+        const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData);
+        // const res = await handleGoogleDrive.postJsonFile("1qK_iDeV9NL0-fBNGbzEE_KJ0EORChgjz", textData);
+        
+        
+        
         // const listOfFiles = await handleGoogleDrive.getListOfFiles();
         // const groupList = await handleGroup.getGroupList(global_data["access_token"]);
         // const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);

@@ -26,6 +26,8 @@ let excelToTxt = (excelData) => {
     //         }, ..., {}
     //     ],
     // ]
+    console.log(typeof(excelData), excelData)
+    console.log(excelData[0][0],excelData[0][1],excelData[1][0])
     let textData = [];
     const idCol = 0; // 【要変更】社員IDの列
     const totalRow = 0; // 【要変更】"Total"の列
@@ -39,10 +41,10 @@ let excelToTxt = (excelData) => {
         //ここから各行を見ていく
         //まず、０列目に社員IDがあれば(=nullでなければ)、colの列を取得する
         let row = 2; //【要変更】最初に社員IDがある行(荒川さんの行)で初期化
-        while(excelData[row][idCol] !== null){
+        while(excelData[row][idCol] != null){
             date.push({
                 id: excelData[row][idCol],
-                time: excelData[row][col],
+                time: excelData[row+1][col],
             });
             row++; //【要変更】 ２つ飛ばしの場合は？
         }
