@@ -32,6 +32,7 @@ app.listen(PORT, function () {
 // Global variable
 let global_data = {}
 const RETRY_COUNT_MAX = 5
+const domainEmail = "@donnguri"
 const ownerEmail = "14262@donnguri"
 const developerEmail = "14262@donnguri"
 
@@ -299,7 +300,7 @@ app.post("/remind", async (req, res, next) => {
             try {
                 // Send message
                 console.debug("Send message", content)
-                const rst = await handleMessage.sendMessageToUser(content, botId, id, global_data["access_token"])
+                const rst = await handleMessage.sendMessageToUser(content, botId, id + domainEmail, global_data["access_token"])
                 console.debug("Success sending message", rst.status)
                 break
             } catch (error) {
