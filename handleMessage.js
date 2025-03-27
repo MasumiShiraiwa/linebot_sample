@@ -120,6 +120,10 @@ let downloadFromMessage = async (botId, fileId, accessToken) => {
     }
   }
 
+let sendErrorToDevelopper = async () => {
+
+};
+
   module.exports = {
     sendMessageToUser,
     downloadFromMessage

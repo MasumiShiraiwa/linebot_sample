@@ -10,6 +10,7 @@ const handleGroup = require("./handleGroup");
 const handleGoogleDrive = require("./handleGoogleDrive");
 const fileConverter = require("./fileConverter");
 const { totalmem } = require('os');
+const { send } = require('process');
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -32,6 +33,20 @@ app.listen(PORT, function () {
 let global_data = {}
 const RETRY_COUNT_MAX = 5
 const ownerEmail = "14262@donnguri"
+const developerEmail = "14262@donnguri"
+
+// Env variable
+
+const clientId = process.env.LW_API_CLIENT_ID
+const clientSecret = process.env.LW_API_CLIENT_SECRET
+const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
+// const privatekey = process.env.LW_API_PRIVATEKEY // Rneder.comの場合
+const privatekey = process.env.LW_API_PRIVATEKEY.replace(/\\n/g, '\n'); // ローカルサーバの場合
+const botId = process.env.LW_API_BOT_ID
+
+const scope = "group.note, group.read, bot, bot.message, user.read, task"
+// const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
+
 
 let verifyBody = (req, res, next) => {
     const botSecret = process.env.LW_API_BOT_SECRET;
@@ -57,22 +72,7 @@ let verifyBody = (req, res, next) => {
     }
 };
 
-
-
-app.post('/callback', verifyBody, async (req, res, next) => {
-    const clientId = process.env.LW_API_CLIENT_ID
-    const clientSecret = process.env.LW_API_CLIENT_SECRET
-    const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
-    // const privatekey = process.env.LW_API_PRIVATEKEY // Rneder.comの場合
-    const privatekey = process.env.LW_API_PRIVATEKEY.replace(/\\n/g, '\n'); // ローカルサーバの場合
-    const botId = process.env.LW_API_BOT_ID
-
-    const scope = "group.note, group.read, bot, bot.message, user.read, task"
-    // const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
-    
-    const body = req.body;
-    console.debug("Get message body", body)
-
+let getAccessToken = async () => {
     if (!global_data.hasOwnProperty("access_token")) {
         // Get access token
         console.debug("Get access token");
@@ -80,7 +80,35 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         global_data["access_token"] = accessToken
         console.log("access token: ", accessToken);
     }
+    return;
+}
 
+
+
+app.post('/callback', verifyBody, async (req, res, next) => {
+    // const clientId = process.env.LW_API_CLIENT_ID
+    // const clientSecret = process.env.LW_API_CLIENT_SECRET
+    // const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
+    // // const privatekey = process.env.LW_API_PRIVATEKEY // Rneder.comの場合
+    // const privatekey = process.env.LW_API_PRIVATEKEY.replace(/\\n/g, '\n'); // ローカルサーバの場合
+    // const botId = process.env.LW_API_BOT_ID
+
+    // const scope = "group.note, group.read, bot, bot.message, user.read, task"
+    // // const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
+    
+
+    // if (!global_data.hasOwnProperty("access_token")) {
+    //     // Get access token
+    //     console.debug("Get access token");
+    //     const accessToken = await lineworks.getAccessToken(clientId, clientSecret, serviceAccount, privatekey, scope);
+    //     global_data["access_token"] = accessToken
+    //     console.log("access token: ", accessToken);
+    // }
+
+    await getAccessToken();
+
+    const body = req.body;
+    console.debug("Get message body", body)
 
     const senderId = body.source.userId
     console.log("senderId: ", senderId)
@@ -156,7 +184,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }
-
+    // メッセージ送信処理
     for (let i = 0; i < RETRY_COUNT_MAX; i++) {
         console.debug("Try ", i + 1)
         try {
@@ -203,13 +231,26 @@ app.post('/callback', verifyBody, async (req, res, next) => {
 
 // GASからのリクエストを受ける
 // 【要変更】 REST_APIに則ってResponseを返す
+//  メッセージの送信に失敗したときを考える
 app.post("/remind", async (req, res, next) => {
+    let remindList = [];
+    let sendErrorList = []; // return 用
+
+    // 明日の日付を取得
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const month = tomorrow.getMonth() + 1;
+    const date = tomorrow.getDate();
+    const date_idx = date - 1;
+
+
+
     const body = req.body;
-    console.debug("Get message body", body)
+    console.debug("Get request body", body)
 
     const fileList = await handleGoogleDrive.getListOfFiles();
-    console.log(fileList.length)
-    const month = new Date().getMonth() + 1;
+
     let jsonFileId = undefined;
     let fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
     for (let i = 0; i < fileList.length; i++){
@@ -221,19 +262,61 @@ app.post("/remind", async (req, res, next) => {
     };
 
     if (!jsonFileId) {
-        return res.status(403).json({ error: "該当するJSONファイルが見つかりませんでした。" });
+        let errorMessage = "該当するJSONファイルが見つかりませんでした。"
+        return res.status(404).json({ error: errorMessage });
     }
     const jsonData = await handleGoogleDrive.getJsonFile(jsonFileId);
 
+    if(!jsonData){
+        let errorMessage = "Drive上のJSONファイルが空です。"
+        return res.status(404).json({ error: errorMessage });
+    }
 
-    const tomorrow = new Date().getDate() + 1;
-    const tomorrow_idx = tomorrow - 1;
-    console.log("明日は", tomorrow, "日です");
 
+    remindList = jsonData[date_idx]; 
 
+    if(!remindList){ //
+        let errorMessage = "明日"+ date + "のシフトリストを取得できません。";
+        return res.status(404).json({ error: errorMessage });
+    }
+
+    //認証情報の取得
+    await getAccessToken();
     
-    let remindList = jsonData[tomorrow_idx];
+    for(i=0; i<remindList.length; i++){
+        let id = remindList[i].id;
+        let time = remindList[i].time;
 
-    return res.json(remindList);
+        let content = {
+            content: {
+                type: "text",
+                text: "明日" + tomorrow.toLocaleDateString() + "は「" + time + "」での出勤です。\nよろしくおねがいします。"
+            }
+        }
+
+        for (let i = 0; i < RETRY_COUNT_MAX; i++) {
+            console.debug("Try ", i + 1)
+            try {
+                // Send message
+                console.debug("Send message", content)
+                const rst = await handleMessage.sendMessageToUser(content, botId, id, global_data["access_token"])
+                console.debug("Success sending message", rst.status)
+                break
+            } catch (error) {
+                if (i === RETRY_COUNT_MAX){
+                    let errorMessage = id + "へ、メッセージを送信できませんでした"
+                    sendErrorList.push({"id":id, "time":time});
+                }
+                // 適切なエラー処理を追加
+                await setTimeout(2 ** i);
+            }
+        }
+    }
+
+    if (!sendErrorList.length){
+        return res.status(200).json(remindList);
+    }else{
+        return res.status(206).json(sendErrorList);
+    }
 
 });
