@@ -9,8 +9,10 @@ const handleDrive = require("./handleDrive");
 const handleGroup = require("./handleGroup");
 const handleGoogleDrive = require("./handleGoogleDrive");
 const fileConverter = require("./fileConverter");
-const { totalmem } = require('os');
+const { totalmem, type } = require('os');
 const { send } = require('process');
+const { content } = require('googleapis/build/src/apis/content');
+const { tpu } = require('googleapis/build/src/apis/tpu');
 
 const PORT = process.env.PORT || 3000;
 let app = express();
@@ -83,8 +85,6 @@ let getAccessToken = async () => {
     return;
 }
 
-
-
 app.post('/callback', verifyBody, async (req, res, next) => {
     await getAccessToken();
 
@@ -102,62 +102,62 @@ app.post('/callback', verifyBody, async (req, res, next) => {
 
     /**
      * 受信したメッセージの"送信者"と"メッセージタイプ"をもとに、処理を分ける
-     */
-    // 管理者からファイルを送られた場合
-    if (recivedContent.content.type == "file" && userEmail == ownerEmail){
-        //Excel Fileの取得と検証？ファイル名から月を判別する？
-        const res = await handleDrive.uploadToDrive(botId, recivedContent.content.fileId, global_data["access_token"]);
+     * 各場合分けに応じて、content = {type: , text:}を用意する。
+     **/
+    
+    // 管理者からシフト更新の通知を受け取った場合
+    if(userEmail == ownerEmail && recivedContent.content.type == "text" && recivedContent.content.text == "シフト更新"){
         
-        if(true){
+        try{
+
+            const fileList = await handleGoogleDrive.getListOfFiles();
+        
+            const month = new Date().getMonth() + 1;
+            let shiftFileId = undefined;
+            let fileName = ["NEWoMan新宿" + String(month) + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
+            
+            for (let i = 0; i < fileList.length; i++){
+                console.log(fileName, fileList[i].name)
+                if(fileName.includes(fileList[i].name)){
+                    console.log(String(month), "月分のシフト表を取得できました。");
+                    shiftFileId = fileList[i].id;
+                }
+            };
+            
+            if(shiftFileId == null){
+                content = {
+                    content: {
+                        type: "text",
+                        text: String(month) + "月分のエクセルファイルが見つかりません。\n Driveに再アップロードしてください。"
+                    }
+                }
+            }else{
+                try{
+                    const excelData = await handleGoogleDrive.getExcelFile(shiftFileId);
+                    const textData = fileConverter.excelToTxt(excelData);
+                    const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
+                
+                    content = {
+                        content: {
+                            type: "text",
+                            text: String(month) + "月分のシフト表を受け付けました。"
+                        }
+                    };
+                }finally{
+                    console.error("Failed to convert excel to json at GoogleDrive", error);
+                }
+            }
+        }catch(error){
+            console.error("Failed to get uptaded sift file", error);
             content = {
                 content: {
                     type: "text",
-                    text: JSON.stringify(res)
+                    text: "サーバでエラーが発生しました。\n白岩までお知らせください。"
                 }
             }
         }
-    }else if(userEmail == ownerEmail && recivedContent.content.type == "text" && recivedContent.content.text == "シフト更新"){
-        const fileList = await handleGoogleDrive.getListOfFiles();
-        const month = new Date().getMonth() + 1;
-        let shiftFileId = undefined;
-        let fileName = ["NEWoMan新宿" + String(month) + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
-        for (let i = 0; i < fileList.length; i++){
-            console.log(fileName, fileList[i].name)
-            if(fileName.includes(fileList[i].name)){
-                console.log(String(month), "月分のシフト表を取得できました。");
-                shiftFileId = fileList[i].id;
-            }
-        };
-        if(shiftFileId == null){
-            console.log(fileName + "が見つかりません")
-            return;
-        }
-        const excelData = await handleGoogleDrive.getExcelFile(shiftFileId);
-        // const excelData = await handleGoogleDrive.getExcelFile("1CaszqlFQy9h6nbKNoV0itUY-QvCMbrn8");
-        const textData = fileConverter.excelToTxt(excelData);
-        console.log(process.env.GOOGLE_DRIVE_NB_FOLDER_ID);
-        const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
-        // const res = await handleGoogleDrive.postJsonFile("1qK_iDeV9NL0-fBNGbzEE_KJ0EORChgjz", textData);
         
-        
-        
-        // const listOfFiles = await handleGoogleDrive.getListOfFiles();
-        // const groupList = await handleGroup.getGroupList(global_data["access_token"]);
-        // const taskCategoryList = await getTask.getTaskCategoryList(senderId, global_data["access_token"]);
-        // const taskList = await getTask.getTaskList(senderId, global_data["access_token"]);
-        // const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
-        // const res = await handleGroup.postNote(groupList[0].groupId, global_data["access_token"]);
-        // const notePostList = await handleGroup.getNotePostList(groupList[0].groupId, global_data["access_token"]);
-        // const notePost = await handleGroup.getNotePost("68d2b697-7c8d-4799-32d5-042944f3671", notePostList[0].postId, global_data["access_token"]);
-        content = {
-            content: {
-                type: "text",
-                text: JSON.stringify(textData)
-                // text: JSON.stringify(notePostList) + "\n" + JSON.stringify(notePost)
-                // text: "Excelファイルを送信してください。\nファイルを送信しても受付完了メッセージが届かなかった場合は、再度ファイルを送信してください。"
-            }
-        }
-    }else{
+    }else if(userEmail != ownerEmail &&  userEmail != developerEmail){
         content = {
             content: {
                 type: "text",
@@ -165,6 +165,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
             }
         }
     }
+
     // メッセージ送信処理
     for (let i = 0; i < RETRY_COUNT_MAX; i++) {
         console.debug("Try ", i + 1)
@@ -224,9 +225,6 @@ app.post("/remind", async (req, res, next) => {
     const month = tomorrow.getMonth() + 1;
     const date = tomorrow.getDate();
     const date_idx = date - 1;
-
-    // const body = req.body;
-    // console.debug("Get request body", body)
 
     try{
         
