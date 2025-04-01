@@ -46,7 +46,6 @@ const privatekey = process.env.LW_API_PRIVATEKEY.replace(/\\n/g, '\n'); // ロ�
 const botId = process.env.LW_API_BOT_ID
 
 const scope = "group.note, group.read, bot, bot.message, user.read, task"
-// const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
 
 
 let verifyBody = (req, res, next) => {
@@ -87,25 +86,6 @@ let getAccessToken = async () => {
 
 
 app.post('/callback', verifyBody, async (req, res, next) => {
-    // const clientId = process.env.LW_API_CLIENT_ID
-    // const clientSecret = process.env.LW_API_CLIENT_SECRET
-    // const serviceAccount = process.env.LW_API_SERVICE_ACCOUNT
-    // // const privatekey = process.env.LW_API_PRIVATEKEY // Rneder.comの場合
-    // const privatekey = process.env.LW_API_PRIVATEKEY.replace(/\\n/g, '\n'); // ローカルサーバの場合
-    // const botId = process.env.LW_API_BOT_ID
-
-    // const scope = "group.note, group.read, bot, bot.message, user.read, task"
-    // // const scope = "bot, bot.read, bot.message, user.read, group.read, group.note, group.note.read"
-    
-
-    // if (!global_data.hasOwnProperty("access_token")) {
-    //     // Get access token
-    //     console.debug("Get access token");
-    //     const accessToken = await lineworks.getAccessToken(clientId, clientSecret, serviceAccount, privatekey, scope);
-    //     global_data["access_token"] = accessToken
-    //     console.log("access token: ", accessToken);
-    // }
-
     await getAccessToken();
 
     const body = req.body;
@@ -245,79 +225,133 @@ app.post("/remind", async (req, res, next) => {
     const date = tomorrow.getDate();
     const date_idx = date - 1;
 
+    // const body = req.body;
+    // console.debug("Get request body", body)
 
+    try{
+        
+        //認証情報の取得
+        await getAccessToken();
 
-    const body = req.body;
-    console.debug("Get request body", body)
+        const fileList = await handleGoogleDrive.getListOfFiles();
 
-    const fileList = await handleGoogleDrive.getListOfFiles();
-
-    let jsonFileId = undefined;
-    let fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
-    for (let i = 0; i < fileList.length; i++){
-        console.log(fileName, fileList[i].name)
-        if(fileName.includes(fileList[i].name)){
-            console.log(String(month), "月分のJsonファイルを取得できました。");
-            jsonFileId = fileList[i].id;
-        }
-    };
-
-    if (!jsonFileId) {
-        let errorMessage = "該当するJSONファイルが見つかりませんでした。"
-        return res.status(404).json({ error: errorMessage });
-    }
-    const jsonData = await handleGoogleDrive.getJsonFile(jsonFileId);
-
-    if(!jsonData){
-        let errorMessage = "Drive上のJSONファイルが空です。"
-        return res.status(404).json({ error: errorMessage });
-    }
-
-
-    remindList = jsonData[date_idx]; 
-
-    if(!remindList){ //
-        let errorMessage = "明日"+ date + "のシフトリストを取得できません。";
-        return res.status(404).json({ error: errorMessage });
-    }
-
-    //認証情報の取得
-    await getAccessToken();
-    
-    for(i=0; i<remindList.length; i++){
-        let id = remindList[i].id;
-        let time = remindList[i].time;
-
-        let content = {
-            content: {
-                type: "text",
-                text: "明日" + tomorrow.toLocaleDateString() + "は「" + time + "」での出勤です。\nよろしくおねがいします。"
+        let jsonFileId = undefined;
+        let fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
+        for (let i = 0; i < fileList.length; i++){
+            console.log(fileName, fileList[i].name)
+            if(fileName.includes(fileList[i].name)){
+                console.log(String(month), "月分のJsonファイルを取得できました。");
+                jsonFileId = fileList[i].id;
             }
-        }
+        };
 
-        for (let i = 0; i < RETRY_COUNT_MAX; i++) {
-            console.debug("Try ", i + 1)
-            try {
-                // Send message
-                console.debug("Send message", content)
-                const rst = await handleMessage.sendMessageToUser(content, botId, id + domainEmail, global_data["access_token"])
-                console.debug("Success sending message", rst.status)
-                break
+        if (!jsonFileId) {
+            let errorMessage = "該当するJSONファイルが見つかりませんでした。"
+            try{
+                const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                console.debug("Developer notified successfully", rst.status);
             } catch (error) {
-                if (i === RETRY_COUNT_MAX){
-                    let errorMessage = id + "へ、メッセージを送信できませんでした"
-                    sendErrorList.push({"id":id, "time":time});
+                console.error("Failed to notify developer:", error.message);
+            }
+            res.status(404).json({ error: errorMessage });
+            return;
+        }
+        const jsonData = await handleGoogleDrive.getJsonFile(jsonFileId);
+
+        if(!jsonData){
+            let errorMessage = "Drive上のJSONファイルが空です。"
+            try{
+                const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                console.debug("Developer notified successfully", rst.status);
+            } catch (error) {
+                console.error("Failed to notify developer:", error.message);
+            }
+            res.status(404).json({ error: errorMessage });
+            return;
+        }
+
+
+        remindList = jsonData[date_idx]; 
+
+        if(!remindList){ //
+            let errorMessage = "明日"+ date + "のシフトリストを取得できません。";
+            try{
+                const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                console.debug("Developer notified successfully", rst.status);
+            } catch (error) {
+                console.error("Failed to notify developer:", error.message);
+            }
+            res.status(404).json({ error: errorMessage });
+            return;
+        }
+        
+        for(let i=0; i<remindList.length; i++){
+            let id = remindList[i].id;
+            let time = remindList[i].time;
+
+            let content = {
+                content: {
+                    type: "text",
+                    text: "明日" + tomorrow.toLocaleDateString() + "は「" + time + "」での出勤です。\nよろしくおねがいします。"
                 }
-                // 適切なエラー処理を追加
-                await setTimeout(2 ** i);
+            }
+
+            for (let j = 0; j < RETRY_COUNT_MAX; j++) {
+                console.debug("Try ", j + 1)
+                try {
+                    // Send message
+                    console.debug("Send message", content)
+                    const rst = await handleMessage.sendMessageToUser(content, botId, id + domainEmail, global_data["access_token"])
+                    console.debug("Success sending message", rst.status)
+                    break
+                } catch (error) {
+                    // debug用
+                    if (error.response) {
+                        const errStatus = error.response.status
+                        const errBody = error.response.data
+                        if (errStatus == 401) {
+                            if (errBody["code"] == "UNAUTHORIZED") {
+                                // Get access token
+                                console.debug("Update access token");
+                                await getAccessToken();
+                            }
+                        } else if (errStatus == 429) {
+                            // Over rate limit
+                            console.debug("Over rate limit. Retry.");
+                        }
+                    }else{
+                        console.error(error.message);
+                    }
+
+                    if (j === RETRY_COUNT_MAX - 1){
+                        sendErrorList.push({"id":id, "time":time});
+                    }
+                    // 適切なエラー処理を追加
+                    // await setTimeout(2 ** j);
+                    await new Promise(res => setTimeout(res, 2 ** j * 1000));
+                }
             }
         }
+
+        if (sendErrorList.length === 0) {
+            return res.status(200).json({ message: "All messages sent successfully", data: remindList });
+        } else {
+            // 206: 一部失敗 (Partial Content)
+
+            // 開発者へ通知
+            const errorMessage = `送信に失敗したリスト:\n${JSON.stringify(sendErrorList, null, 2)}`;
+            try {
+                const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                console.debug("Developer notified successfully", rst.status);
+            } catch (error) {
+                console.error("Failed to notify developer:", error.message);
+            }
+            return res.status(206).json({ message: "Some messages failed to send", failed: sendErrorList });
+        }
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        return res.status(500).json({ error: "Internal server error", details: error.message });
     }
 
-    if (!sendErrorList.length){
-        return res.status(200).json(remindList);
-    }else{
-        return res.status(206).json(sendErrorList);
-    }
 
 });

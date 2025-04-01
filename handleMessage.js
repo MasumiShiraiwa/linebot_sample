@@ -35,6 +35,32 @@ const axios = require("axios");
     }
 };
 
+let sendErrorToDevelopper = async (errorMessage, botId, developerId, accessToken) => {
+  const headers = {
+      Authorization: `Bearer ${accessToken}`
+  };
+
+  let content = {
+    content: {
+        type: "text",
+        text: errorMessage
+    }
+  }
+  try{
+    const res = await axios.post(`https://www.worksapis.com/v1.0/bots/${botId}/users/${developerId}/messages`, content,
+      { headers }
+    );
+    return res;
+  }catch(e){
+    console.error("Error sending message to user:", e.message);
+    if(e.response){
+        console.error("HTTP Status:", e.response.status);
+        console.error("Response Data:", e.response.data);
+    }
+  }
+
+};
+
 
 /**
  * Download file from message
@@ -120,12 +146,11 @@ let downloadFromMessage = async (botId, fileId, accessToken) => {
     }
   }
 
-let sendErrorToDevelopper = async () => {
 
-};
 
   module.exports = {
     sendMessageToUser,
+    sendErrorToDevelopper,
     downloadFromMessage
   };
   
