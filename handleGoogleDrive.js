@@ -117,6 +117,34 @@ let postJsonFile = async (fileId,textData, fileName) => {
     }
 };
 
+let updateJsonFile = async (fileId,textData) => {
+    try{
+        const drive = await authorize();
+
+        const jsonData = JSON.stringify(textData, null, 2)
+
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(jsonData);
+
+        console.log(`jsonData: ${jsonData}`);
+
+        console.log("update json file");
+        const res = await drive.files.update({
+            fileId: fileId,
+            requestBody: {},
+            media: {
+                mimeType: "application/json", // ファイルの MIME タイプ
+                body: bufferStream, // 新しいデータ
+            },
+        });
+
+        console.log("File updated succesfully: ", res.data);
+
+    } catch (e) {
+        console.error("Error updating file:", e);
+    }
+};
+
 let getJsonFile = async (fileId) => {
     const drive = await authorize();
     let file;
@@ -144,4 +172,4 @@ let getJsonFile = async (fileId) => {
     return jsonData;
 }
 
-module.exports = {getListOfFiles, getExcelFile, postJsonFile, getJsonFile};
+module.exports = {getListOfFiles, getExcelFile, postJsonFile, updateJsonFile, getJsonFile};

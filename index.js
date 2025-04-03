@@ -222,9 +222,9 @@ app.post("/remind", async (req, res, next) => {
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
-    const month = tomorrow.getMonth() + 1;
-    const date = tomorrow.getDate();
-    const date_idx = date - 1;
+    const tomorrow_month = tomorrow.getMonth() + 1;
+    const tomorrow_date = tomorrow.getDate();
+    const date_idx = tomorrow_date - 1;
 
     try{
         
@@ -234,11 +234,11 @@ app.post("/remind", async (req, res, next) => {
         const fileList = await handleGoogleDrive.getListOfFiles();
 
         let jsonFileId = undefined;
-        let fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
+        let fileName = ["NEWoMan新宿" + tomorrow_month + "月シフト" + ".json", "NEWoMan新宿" + (String(tomorrow_month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
         for (let i = 0; i < fileList.length; i++){
             console.log(fileName, fileList[i].name)
             if(fileName.includes(fileList[i].name)){
-                console.log(String(month), "月分のJsonファイルを取得できました。");
+                console.log(String(tomorrow_month), "月分のJsonファイルを取得できました。");
                 jsonFileId = fileList[i].id;
             }
         };
@@ -251,8 +251,7 @@ app.post("/remind", async (req, res, next) => {
             } catch (error) {
                 console.error("Failed to notify developer:", error.message);
             }
-            res.status(404).json({ error: errorMessage });
-            return;
+            return res.status(404).json({ error: errorMessage });
         }
         const jsonData = await handleGoogleDrive.getJsonFile(jsonFileId);
 
@@ -264,35 +263,44 @@ app.post("/remind", async (req, res, next) => {
             } catch (error) {
                 console.error("Failed to notify developer:", error.message);
             }
-            res.status(404).json({ error: errorMessage });
-            return;
+            return res.status(404).json({ error: errorMessage });
         }
 
 
         remindList = jsonData[date_idx]; 
 
         if(!remindList){ //
-            let errorMessage = "明日"+ date + "のシフトリストを取得できません。";
+            let errorMessage = "明日"+ tomorrow_date + "のシフトリストを取得できません。";
             try{
                 const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
                 console.debug("Developer notified successfully", rst.status);
             } catch (error) {
                 console.error("Failed to notify developer:", error.message);
             }
-            res.status(404).json({ error: errorMessage });
-            return;
+            return res.status(404).json({ error: errorMessage });
         }
         
         for(let i=0; i<remindList.length; i++){
             let id = remindList[i].id;
             let time = remindList[i].time;
 
-            let content = {
-                content: {
-                    type: "text",
-                    text: "明日" + tomorrow.toLocaleDateString() + "は「" + time + "」での出勤です。\nよろしくおねがいします。"
+            if(time.indexOf("休") != -1){
+                let content = {
+                    content: {
+                        type: "text",
+                        text: "明日はお休み（" + time + "）です。"
+                    }
+                }
+            }else{
+                let content = {
+                    content: {
+                        type: "text",
+                        text: "明日" + tomorrow_month + "月" + tomorrow_date + "日は「" + time + "」での出勤です。\nよろしくおねがいします。"
+                    }
                 }
             }
+
+            
 
             for (let j = 0; j < RETRY_COUNT_MAX; j++) {
                 console.debug("Try ", j + 1)
@@ -351,5 +359,81 @@ app.post("/remind", async (req, res, next) => {
         return res.status(500).json({ error: "Internal server error", details: error.message });
     }
 
+
+});
+
+app.post("/updateJson", async (req, res, next)=> {
+
+    // 明日の日付を取得
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const month = tomorrow.getMonth() + 1;
+    const date = tomorrow.getDate();
+    const date_idx = date - 1;
+
+    try{
+        //認証情報の取得
+        await getAccessToken();
+
+        // エクセルファイルがあるかの確認
+        const fileList = await handleGoogleDrive.getListOfFiles();
+
+        let excelFileId = undefined;
+        let fileName = ["NEWoMan新宿" + month + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
+        for (let i = 0; i < fileList.length; i++){
+            console.log(fileName, fileList[i].name)
+            if(fileName.includes(fileList[i].name)){
+                console.log(String(month), "月分のExcelファイルを取得できました。");
+                excelFileId = fileList[i].id;
+            }
+        };
+
+        if (!excelFileId) {
+            return res.status(200).json({message : "更新はありませんでした"});
+        }
+
+        let jsonFileId = undefined;
+        fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
+        for (let i = 0; i < fileList.length; i++){
+            console.log(fileName, fileList[i].name)
+            if(fileName.includes(fileList[i].name)){
+                console.log(String(month), "月分のJsonファイルを取得できました。");
+                jsonFileId = fileList[i].id;
+            }
+        };
+
+        if(!jsonFileId){ // JSON Fileの新規作成
+            try{
+                const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
+                const textData = fileConverter.excelToTxt(excelData);
+                const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
+                return res.status(200).json({message: "Jsonファイルを新規作成しました。"})
+            }catch(error){
+                console.error("Failed to create new json file at GoogleDrive", error);
+                let errorMessage = "JSONファイルの新規作成に失敗しました。"
+                return res.status(404).json({ error: errorMessage });
+            };
+        }else{ // JSON Fileの更新
+            try{
+                const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
+                const textData = fileConverter.excelToTxt(excelData);
+                const res = await handleGoogleDrive.updateJsonFile(jsonFileId, textData);
+                return res.status(200).json({message: "Jsonファイルを更新しました。"})
+            }catch(error){
+                console.error("Failed to update json file at GoogleDrive", error);
+                let errorMessage = "JSONファイルの更新に失敗しました。"
+                return res.status(404).json({ error: errorMessage });
+            };
+        }
+
+        // Excel Fileの削除
+
+
+
+    }catch(error){
+        console.error("Unexpected error:", error);
+        return res.status(500).json({ error: "Internal server error", details: error.message });
+    }
 
 });
