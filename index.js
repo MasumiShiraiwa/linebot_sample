@@ -226,6 +226,8 @@ app.post("/remind", async (req, res, next) => {
     const tomorrow_date = tomorrow.getDate();
     const date_idx = tomorrow_date - 1;
 
+    let content = "";
+
     try{
         
         //認証情報の取得
@@ -285,14 +287,16 @@ app.post("/remind", async (req, res, next) => {
             let time = remindList[i].time;
 
             if(time.indexOf("休") != -1){
-                let content = {
+                console.log("休み")
+                content = {
                     content: {
                         type: "text",
                         text: "明日はお休み（" + time + "）です。"
                     }
                 }
             }else{
-                let content = {
+                console.log("出勤")
+                content = {
                     content: {
                         type: "text",
                         text: "明日" + String(tomorrow_month) + "月" + String(tomorrow_date) + "日は「" + time + "」での出勤です。\nよろしくおねがいします。"
