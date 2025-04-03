@@ -295,13 +295,11 @@ app.post("/remind", async (req, res, next) => {
                 let content = {
                     content: {
                         type: "text",
-                        text: "明日" + tomorrow_month + "月" + tomorrow_date + "日は「" + time + "」での出勤です。\nよろしくおねがいします。"
+                        text: "明日" + String(tomorrow_month) + "月" + String(tomorrow_date) + "日は「" + time + "」での出勤です。\nよろしくおねがいします。"
                     }
                 }
             }
-
             
-
             for (let j = 0; j < RETRY_COUNT_MAX; j++) {
                 console.debug("Try ", j + 1)
                 try {
