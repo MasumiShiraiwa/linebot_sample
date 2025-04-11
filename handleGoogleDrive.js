@@ -3,6 +3,7 @@ const { google } = require("googleapis");
 const XLSX = require("xlsx");
 const stream = require("stream");
 const { json } = require("stream/consumers");
+const { file } = require("googleapis/build/src/apis/file");
 
 const SCOPES = [`https://www.googleapis.com/auth/drive`]
 
@@ -85,6 +86,21 @@ let getExcelFile = async (fileId) => {
     return sheetData; // 一時的にファイルの内容を配列として返す
 
 };
+
+let delExcelFile = async (fileId) => {
+    const drive = await authorize();
+    const params = {fileId: fileId,};
+    console.log("Delete the excel file");
+    try{
+        const res = await drive.files.delete(params);
+        console.log(res);
+        return true;
+    }catch(err){
+        console.log("Error in delExcelFile", err);
+        return false;
+    }
+
+}
 
 let postJsonFile = async (fileId,textData, fileName) => {
     try{
@@ -172,4 +188,4 @@ let getJsonFile = async (fileId) => {
     return jsonData;
 }
 
-module.exports = {getListOfFiles, getExcelFile, postJsonFile, updateJsonFile, getJsonFile};
+module.exports = {getListOfFiles, getExcelFile, delExcelFile, postJsonFile, updateJsonFile, getJsonFile};

@@ -410,7 +410,7 @@ app.post("/updateJson", async (req, res, next)=> {
                 const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
                 const textData = fileConverter.excelToTxt(excelData);
                 const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
-                return res.status(200).json({message: "Jsonファイルを新規作成しました。"})
+                // return res.status(200).json({message: "Jsonファイルを新規作成しました。"})
             }catch(error){
                 console.error("Failed to create new json file at GoogleDrive", error);
                 let errorMessage = "JSONファイルの新規作成に失敗しました。"
@@ -421,7 +421,7 @@ app.post("/updateJson", async (req, res, next)=> {
                 const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
                 const textData = fileConverter.excelToTxt(excelData);
                 const res = await handleGoogleDrive.updateJsonFile(jsonFileId, textData);
-                return res.status(200).json({message: "Jsonファイルを更新しました。"})
+                // return res.status(200).json({message: "Jsonファイルを更新しました。"})
             }catch(error){
                 console.error("Failed to update json file at GoogleDrive", error);
                 let errorMessage = "JSONファイルの更新に失敗しました。"
@@ -430,7 +430,13 @@ app.post("/updateJson", async (req, res, next)=> {
         }
 
         // Excel Fileの削除
+        if(handleGoogleDrive.delExcelFile(excelFileId)){
+            console.log("Excel fileを正常に削除しました");
+        }else{
+            console.log("Excel fileの削除に失敗しました");
+        }
 
+        return res.status(200).json({message: "ファイルの更新/新規作成に成功しました。"})
 
 
     }catch(error){
