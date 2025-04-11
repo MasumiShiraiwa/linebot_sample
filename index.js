@@ -430,7 +430,7 @@ app.post("/updateJson", async (req, res, next)=> {
         }
 
         // Excel Fileの削除
-        if(handleGoogleDrive.delExcelFile(excelFileId)){
+        if(await handleGoogleDrive.delExcelFile(excelFileId)){
             console.log("Excel fileを正常に削除しました");
         }else{
             console.log("Excel fileの削除に失敗しました");
