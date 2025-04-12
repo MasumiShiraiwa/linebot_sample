@@ -92,10 +92,11 @@ let getExcelFile = async (fileId) => {
 
 let delExcelFile = async (fileId) => {
     const drive = await authorize();
-    const params = {fileId: fileId,};
+    const params = {fileId: fileId, requestBody: {'trashed': true}};
     console.log("Delete the excel file");
     try{
-        const res = await drive.files.delete(params);
+        // const res = await drive.files.delete(params);
+        const res = await drive.files.update(params);
         console.log(res);
         return true;
     }catch(err){
