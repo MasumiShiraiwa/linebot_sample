@@ -388,6 +388,7 @@ app.post("/updateJson", async (req, res, next)=> {
             if(fileName.includes(fileList[i].name)){
                 console.log(String(month), "月分のExcelファイルを取得できました。");
                 excelFileId = fileList[i].id;
+                console.log("Excel file id: ", excelFileId);
             }
         };
 
@@ -409,7 +410,7 @@ app.post("/updateJson", async (req, res, next)=> {
             try{
                 const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
                 const textData = fileConverter.excelToTxt(excelData);
-                const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
+                const res = await handleGoogleDrive.postJsonFile(process.env.NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
                 // return res.status(200).json({message: "Jsonファイルを新規作成しました。"})
             }catch(error){
                 console.error("Failed to create new json file at GoogleDrive", error);
