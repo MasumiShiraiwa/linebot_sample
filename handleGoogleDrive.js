@@ -6,6 +6,7 @@ const { json } = require("stream/consumers");
 const { file } = require("googleapis/build/src/apis/file");
 
 const SCOPES = [`https://www.googleapis.com/auth/drive`]
+const NBFolderID = "12O21umQOT1OmOUBGIm96OqxtqjUSVFIo"
 
 let authorize = async () => {
     console.log("GOOGLE_CLIENT_EMAIL:", process.env.GOOGLE_CLIENT_EMAIL);
@@ -40,11 +41,13 @@ let authorize = async () => {
 
 let getListOfFiles = async () => {
     const drive = await authorize();
-    const params = {pageSize: 100}
+    const params = {pageSize: 100,
+        q: 'trashed = false' + ' and ' + '"' + NBFolderID + '" in parents'
+    }
     console.log("Get List of Files");
     try{
         const res = await drive.files.list(params);
-        console.log(res.data.files);
+        // console.log(res.data.files);
         return res.data.files;
     }catch(err){
         console.log("Error in getListOfFiles", err);
