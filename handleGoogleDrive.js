@@ -47,7 +47,7 @@ let getListOfFiles = async () => {
     console.log("Get List of Files");
     try{
         const res = await drive.files.list(params);
-        // console.log(res.data.files);
+        console.log("res.data.files", res.data.files);
         return res.data.files;
     }catch(err){
         console.log("Error in getListOfFiles", err);
