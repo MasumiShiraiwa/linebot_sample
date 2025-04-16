@@ -26,12 +26,11 @@ let excelToTxt = (excelData) => {
     //         }, ..., {}
     //     ],
     // ]
-    console.log(typeof(excelData), excelData)
-    console.log(excelData[0][0],excelData[0][1],excelData[1][0])
     let textData = [];
     const idCol = 0; // 【要変更】社員IDの列
-    const totalRow = 0; // 【要変更】"Total"の列
-    let col = 2; // シフト表の最初の列で初期化
+    const totalRow = 4; // 【要変更】"Total"の行
+    let col = 4; // シフト表の最初の列で初期化
+    const max_row = excelData.length
     while(true){
         if(excelData[totalRow][col] === "Total"){ //【要変更】"Total"の列で終了
             break;
@@ -40,13 +39,17 @@ let excelToTxt = (excelData) => {
         let date = [];
         //ここから各行を見ていく
         //まず、０列目に社員IDがあれば(=nullでなければ)、colの列を取得する
-        let row = 2; //【要変更】最初に社員IDがある行(荒川さんの行)で初期化
-        while(excelData[row][idCol] != null){
+        let row = 17; //【要変更】最初に社員IDがある行(荒川さんの行)で初期化
+        while(row < max_row){
+            if(excelData[row][idCol] == null || excelData[row][col] == null){
+                row += 2;
+                continue;
+            }
             date.push({
                 id: excelData[row][idCol],
-                time: excelData[row+1][col],
+                time: excelData[row][col],
             });
-            row++; //【要変更】 ２つ飛ばしの場合は？
+            row+=2;
         }
 
         // textData.push(JSON.parse(JSON.stringify(date)));
@@ -55,6 +58,7 @@ let excelToTxt = (excelData) => {
     }
 
     console.log("textData: ", textData);
+    Error
 
     return textData;
 };

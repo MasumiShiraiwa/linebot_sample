@@ -6,7 +6,6 @@ const { json } = require("stream/consumers");
 const { file } = require("googleapis/build/src/apis/file");
 
 const SCOPES = [`https://www.googleapis.com/auth/drive`]
-// const NBFolderID = "12O21umQOT1OmOUBGIm96OqxtqjUSVFIo"
 
 let authorize = async () => {
     console.log("GOOGLE_CLIENT_EMAIL:", process.env.GOOGLE_CLIENT_EMAIL);
@@ -35,7 +34,6 @@ let authorize = async () => {
     const authClient = await auth.getClient();
     const drive = google.drive({version: "v3", auth: authClient});
 
-
     return drive;
 };
 
@@ -58,12 +56,14 @@ let getListOfFiles = async () => {
 let getExcelFile = async (fileId) => {
     const drive = await authorize();
     let file;
-    try{
-        file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
-    }catch(err){
-        console.log(err);
-        return null;
-    }
+    file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
+
+    // try{
+    //     file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
+    // }catch(err){
+    //     console.log(err);
+    //     return null;
+    // }
 
     // ストリームをバッファとして読み込む
     const buffers = [];
@@ -80,100 +80,110 @@ let getExcelFile = async (fileId) => {
     const workbook = XLSX.read(fileBuffer, {type: "buffer"});
     const sheetName = workbook.SheetNames[0];
     const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
-    console.log("sheetData: ", sheetData, "type: ", typeof(sheetData));
     
-    for (let i = 0; i < 3; i++){
-        console.log("sheetData[", i, "]: ", sheetData[i]);
-    }
 
     return sheetData; // 一時的にファイルの内容を配列として返す
 
 };
 
-let delExcelFile = async (fileId) => {
+let moveExcelFileToTrash = async (fileId) => {
+    const trashFolderId = "1tFLeL9H8BeBsEQkxLI6hhT5jmLedq7dp";
     const drive = await authorize();
-    const params = {fileId: fileId, requestBody: {'trashed': true}};
-    console.log("Delete the excel file");
-    try{
-        // const res = await drive.files.delete(params);
-        const res = await drive.files.update(params);
-        console.log(res);
-        return true;
-    }catch(err){
-        console.log("Error in delExcelFile", err);
-        return false;
+    console.log("Delete the excel file:", fileId);
+    
+  try {
+    // 1. 対象ファイルの親フォルダを取得
+    const file = await drive.files.get({
+      fileId,
+      fields: 'parents',
+      supportsAllDrives: true
+    });
+
+    const currentParents = file.data.parents?.join(',') || '';
+    if (!currentParents) {
+      console.warn('親フォルダが見つかりません');
+      return false;
     }
+
+    // 2. フォルダ移動（親フォルダを削除し、Trashedに追加）
+    
+    const params = {
+        fileId,
+        addParents: trashFolderId,
+        removeParents: currentParents,
+        supportsAllDrives: true
+      };
+    const response = await drive.files.update(params);
+
+    console.log('Trashedフォルダへ移動完了:', response.data);
+    return true;
+  } catch (err) {
+    console.error('フォルダ移動中にエラー:', err.message || err);
+    return false;
+  }
 
 }
 
 let postJsonFile = async (fileId,textData, fileName) => {
-    try{
-        const drive = await authorize();
+    const drive = await authorize();
 
-        const jsonData = JSON.stringify(textData, null, 2)
+    const jsonData = JSON.stringify(textData, null, 2)
 
-        const bufferStream = new stream.PassThrough();
-        bufferStream.end(jsonData);
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(jsonData);
 
-        console.log(`jsonData: ${jsonData}`);
+    console.log(`jsonData: ${jsonData}`);
 
-        console.log("upload json file");
-        const res = await drive.files.create({
-            requestBody: {
-                name: fileName + ".json",
-                mimeType: "application/json",
-                parents: [fileId], // Google DriveのフォルダID
-            },
-            media: {
-                mimeType: "application/json",
-                body: bufferStream,
-            },
-        });
+    console.log("upload json file");
+    const res = await drive.files.create({
+        requestBody: {
+            name: fileName + ".json",
+            mimeType: "application/json",
+            parents: [fileId], // Google DriveのフォルダID
+        },
+        media: {
+            mimeType: "application/json",
+            body: bufferStream,
+        },
+    });
 
-        console.log("File uploaded succesfully: ", res.data);
+    console.log("File uploaded succesfully: ", res.data);
 
-    } catch (e) {
-        console.error("Error uploading file:", e);
-    }
 };
 
 let updateJsonFile = async (fileId,textData) => {
-    try{
-        const drive = await authorize();
+    const drive = await authorize();
 
-        const jsonData = JSON.stringify(textData, null, 2)
+    const jsonData = JSON.stringify(textData, null, 2)
 
-        const bufferStream = new stream.PassThrough();
-        bufferStream.end(jsonData);
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(jsonData);
 
-        console.log(`jsonData: ${jsonData}`);
+    console.log(`jsonData: ${jsonData}`);
 
-        console.log("update json file");
-        const res = await drive.files.update({
-            fileId: fileId,
-            requestBody: {},
-            media: {
-                mimeType: "application/json", // ファイルの MIME タイプ
-                body: bufferStream, // 新しいデータ
-            },
-        });
+    console.log("update json file");
+    const res = await drive.files.update({
+        fileId: fileId,
+        requestBody: {},
+        media: {
+            mimeType: "application/json", // ファイルの MIME タイプ
+            body: bufferStream, // 新しいデータ
+        },
+    });
 
-        console.log("File updated succesfully: ", res.data);
+    console.log("File updated succesfully: ", res.data);
 
-    } catch (e) {
-        console.error("Error updating file:", e);
-    }
 };
 
 let getJsonFile = async (fileId) => {
     const drive = await authorize();
     let file;
-    try{
-        file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
-    }catch(err){
-        console.log(err);
-        return null;
-    }
+    file = await drive.files.get({fileId: fileId, alt: "media"}, {responseType: "stream"});
+    // try{
+    // }catch(err){
+    //     console.log(err);
+    //     return null;
+    // }
 
     // ストリームをバッファとして読み込む
     const buffers = [];
@@ -192,4 +202,4 @@ let getJsonFile = async (fileId) => {
     return jsonData;
 }
 
-module.exports = {getListOfFiles, getExcelFile, delExcelFile, postJsonFile, updateJsonFile, getJsonFile};
+module.exports = {getListOfFiles, getExcelFile, moveExcelFileToTrash, postJsonFile, updateJsonFile, getJsonFile};

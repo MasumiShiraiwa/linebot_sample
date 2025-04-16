@@ -295,7 +295,7 @@ app.post("/remind", async (req, res, next) => {
                     }
                 }
             }else{
-                console.log("出勤")
+                console.log("出勤情報のリマインド")
                 content = {
                     content: {
                         type: "text",
@@ -326,17 +326,18 @@ app.post("/remind", async (req, res, next) => {
                         } else if (errStatus == 429) {
                             // Over rate limit
                             console.debug("Over rate limit. Retry.");
+                        } else if (errStatus == 400){
+                            console.debug("")
                         }
                     }else{
                         console.error(error.message);
                     }
-
                     if (j === RETRY_COUNT_MAX - 1){
                         sendErrorList.push({"id":id, "time":time});
                     }
                     // 適切なエラー処理を追加
-                    // await setTimeout(2 ** j);
-                    await new Promise(res => setTimeout(res, 2 ** j * 1000));
+                    await setTimeout(2 ** j);
+                    // await new Promise(res => setTimeout(res, 2 ** j * 1000));
                 }
             }
         }
@@ -389,6 +390,7 @@ app.post("/updateJson", async (req, res, next)=> {
                 console.log(String(month), "月分のExcelファイルを取得できました。");
                 excelFileId = fileList[i].id;
                 console.log("Excel file id: ", excelFileId);
+                break;
             }
         };
 
@@ -403,6 +405,7 @@ app.post("/updateJson", async (req, res, next)=> {
             if(fileName.includes(fileList[i].name)){
                 console.log(String(month), "月分のJsonファイルを取得できました。");
                 jsonFileId = fileList[i].id;
+                break;
             }
         };
 
@@ -415,6 +418,13 @@ app.post("/updateJson", async (req, res, next)=> {
             }catch(error){
                 console.error("Failed to create new json file at GoogleDrive", error);
                 let errorMessage = "JSONファイルの新規作成に失敗しました。"
+                try{
+                    const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                    console.debug("Developer notified successfully", rst.status);
+                } catch (error) {
+                    console.error("Failed to notify developer:", error.message);
+                }
+
                 return res.status(404).json({ error: errorMessage });
             };
         }else{ // JSON Fileの更新
@@ -426,15 +436,28 @@ app.post("/updateJson", async (req, res, next)=> {
             }catch(error){
                 console.error("Failed to update json file at GoogleDrive", error);
                 let errorMessage = "JSONファイルの更新に失敗しました。"
+                try{
+                    const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                    console.debug("Developer notified successfully", rst.status);
+                } catch (error) {
+                    console.error("Failed to notify developer:", error.message);
+                }
                 return res.status(404).json({ error: errorMessage });
             };
         }
 
         // Excel Fileの削除
-        if(await handleGoogleDrive.delExcelFile(excelFileId)){
+        if(await handleGoogleDrive.moveExcelFileToTrash(excelFileId)){
             console.log("Excel fileを正常に削除しました");
         }else{
-            console.log("Excel fileの削除に失敗しました");
+            let errorMessage = "Excel fileの削除に失敗しました"
+            try{
+                const rst = await handleMessage.sendErrorToDevelopper(errorMessage, botId, developerEmail, global_data["access_token"]);
+                console.debug("Developer notified successfully", rst.status);
+            } catch (error) {
+                console.error("Failed to notify developer:", error.message);
+            }
+            console.log(errorMessage);
         }
 
         return res.status(200).json({message: "ファイルの更新/新規作成に成功しました。"})
