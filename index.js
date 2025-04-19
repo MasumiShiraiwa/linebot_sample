@@ -114,7 +114,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
         
             const month = new Date().getMonth() + 1;
             let shiftFileId = undefined;
-            let fileName = ["NEWoMan新宿" + String(month) + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
+            let fileName = [String(month) + "月シフト" + ".xlsx", (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
             
             for (let i = 0; i < fileList.length; i++){
                 console.log(fileName, fileList[i].name)
@@ -135,7 +135,7 @@ app.post('/callback', verifyBody, async (req, res, next) => {
                 try{
                     const excelData = await handleGoogleDrive.getExcelFile(shiftFileId);
                     const textData = fileConverter.excelToTxt(excelData);
-                    const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
+                    const res = await handleGoogleDrive.postJsonFile(process.env.GOOGLE_DRIVE_NB_FOLDER_ID, textData, String(month) + "月シフト");
                 
                     content = {
                         content: {
@@ -236,7 +236,7 @@ app.post("/remind", async (req, res, next) => {
         const fileList = await handleGoogleDrive.getListOfFiles();
 
         let jsonFileId = undefined;
-        let fileName = ["NEWoMan新宿" + tomorrow_month + "月シフト" + ".json", "NEWoMan新宿" + (String(tomorrow_month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
+        let fileName = [tomorrow_month + "月シフト" + ".json", (String(tomorrow_month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
         for (let i = 0; i < fileList.length; i++){
             console.log(fileName, fileList[i].name)
             if(fileName.includes(fileList[i].name)){
@@ -281,10 +281,16 @@ app.post("/remind", async (req, res, next) => {
             }
             return res.status(404).json({ error: errorMessage });
         }
+
+        const not_send_list = process.env.NOT_SEND_LIST.split(',');
         
         for(let i=0; i<remindList.length; i++){
             let id = remindList[i].id;
             let time = remindList[i].time;
+            if(not_send_list.includes(String(id))){
+                continue;
+            }
+
 
             if(time.indexOf("休") != -1){
                 console.log("休み")
@@ -383,7 +389,7 @@ app.post("/updateJson", async (req, res, next)=> {
         const fileList = await handleGoogleDrive.getListOfFiles();
 
         let excelFileId = undefined;
-        let fileName = ["NEWoMan新宿" + month + "月シフト" + ".xlsx", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
+        let fileName = [month + "月シフト" + ".xlsx", (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".xlsx"];
         for (let i = 0; i < fileList.length; i++){
             console.log(fileName, fileList[i].name)
             if(fileName.includes(fileList[i].name)){
@@ -399,7 +405,7 @@ app.post("/updateJson", async (req, res, next)=> {
         }
 
         let jsonFileId = undefined;
-        fileName = ["NEWoMan新宿" + month + "月シフト" + ".json", "NEWoMan新宿" + (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
+        fileName = [month + "月シフト" + ".json", (String(month).replace(/[0-9]/g, m => ['０','１','２','３','４','５','６','７','８','９','１０','１１','１２'][m])) + "月シフト" + ".json"];
         for (let i = 0; i < fileList.length; i++){
             console.log(fileName, fileList[i].name)
             if(fileName.includes(fileList[i].name)){
@@ -413,8 +419,7 @@ app.post("/updateJson", async (req, res, next)=> {
             try{
                 const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
                 const textData = fileConverter.excelToTxt(excelData);
-                const res = await handleGoogleDrive.postJsonFile(process.env.NB_FOLDER_ID, textData, "NEWoMan新宿" + String(month) + "月シフト");
-                // return res.status(200).json({message: "Jsonファイルを新規作成しました。"})
+                const res = await handleGoogleDrive.postJsonFile(process.env.NB_FOLDER_ID, textData, String(month) + "月シフト");
             }catch(error){
                 console.error("Failed to create new json file at GoogleDrive", error);
                 let errorMessage = "JSONファイルの新規作成に失敗しました。"
@@ -432,7 +437,6 @@ app.post("/updateJson", async (req, res, next)=> {
                 const excelData = await handleGoogleDrive.getExcelFile(excelFileId);
                 const textData = fileConverter.excelToTxt(excelData);
                 const res = await handleGoogleDrive.updateJsonFile(jsonFileId, textData);
-                // return res.status(200).json({message: "Jsonファイルを更新しました。"})
             }catch(error){
                 console.error("Failed to update json file at GoogleDrive", error);
                 let errorMessage = "JSONファイルの更新に失敗しました。"
